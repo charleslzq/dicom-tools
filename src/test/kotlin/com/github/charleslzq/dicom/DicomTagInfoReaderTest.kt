@@ -21,6 +21,6 @@ class DicomTagInfoReaderTest {
         val dicomInputStream = DicomInputStream(readFile())
         val dicomTagInfoReader = DicomTagInfoReader()
         val tagList = dicomTagInfoReader.parse(dicomInputStream)
-        assertThat(tagList, not(empty()))
+        assertThat("应至少读取一条tag信息", tagList, not(empty()))
     }
 }
