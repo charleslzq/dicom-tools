@@ -4,6 +4,7 @@ import org.dcm4che3.tool.dcm2jpg.Dcm2Jpg
 import java.io.File
 import java.net.URI
 import java.nio.file.Paths
+import java.util.*
 
 class DicomImageReader(private val dirBase : String) {
     private val dcm2jpg = Dcm2Jpg()
@@ -17,7 +18,7 @@ class DicomImageReader(private val dirBase : String) {
     }
 
     fun convert(dicomFile: File) : URI {
-        val fileName = dicomFile.name + ".jpg"
+        val fileName = UUID.randomUUID().toString().toUpperCase() + ".jpg"
         val filePath = Paths.get(dirBase, fileName)
         val destFile = filePath.toFile()
         dcm2jpg.convert(dicomFile, destFile)
