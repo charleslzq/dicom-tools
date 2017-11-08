@@ -27,7 +27,7 @@ class DicomDataReader(imageFileBase: String) {
         getFromTagMap(tagMap, Tag.PatientPosition, dicomPatient::position::set)
         getFromTagMap(tagMap, Tag.PatientSex, dicomPatient::sex::set)
         getFromTagMap(tagMap, Tag.IssuerOfPatientID, dicomPatient::idIssuer::set)
-        getFromTagMap(tagMap, Tag.PatientAge, { value -> dicomPatient.age = value.toInt() })
+        getFromTagMap(tagMap, Tag.PatientAge, { value -> dicomPatient.age = value.substringBefore("Y").toInt() })
         return dicomPatient
     }
 
