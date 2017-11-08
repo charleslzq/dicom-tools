@@ -10,7 +10,7 @@ class DicomImageReader(private val dirBase: String) {
     private val dcm2jpg = Dcm2Jpg()
 
     init {
-        dcm2jpg.initImageWriter("JPEG", "jpg", null, null, null)
+        dcm2jpg.initImageWriter("PNG", "png", null, null, null)
         val dir = File(dirBase)
         if (!dir.exists() || dir.isFile) {
             dir.mkdirs()
@@ -18,7 +18,7 @@ class DicomImageReader(private val dirBase: String) {
     }
 
     fun convert(dicomFile: File): URI {
-        val fileName = dicomFile.name + ".jpg"
+        val fileName = dicomFile.name + ".png"
         val filePath = Paths.get(dirBase, fileName)
         val destFile = filePath.toFile()
         dcm2jpg.convert(dicomFile, destFile)
