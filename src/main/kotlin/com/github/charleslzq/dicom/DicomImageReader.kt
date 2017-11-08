@@ -18,7 +18,7 @@ class DicomImageReader(private val dirBase: String) {
     }
 
     fun convert(dicomFile: File): URI {
-        val fileName = UUID.randomUUID().toString().toUpperCase() + ".jpg"
+        val fileName = dicomFile.name + ".jpg"
         val filePath = Paths.get(dirBase, fileName)
         val destFile = filePath.toFile()
         dcm2jpg.convert(dicomFile, destFile)
