@@ -40,6 +40,6 @@ class DicomDataReaderTest {
         val uri = dicomData.imageUri
         val imgFile = File(uri)
         assertThat("目录中应有一个文件", dir.listFiles(), arrayWithSize(1))
-        assertThat("JPG图片文件应存在", imgFile.exists() && imgFile.isFile && imgFile.name.endsWith(".jpg"))
+        assertThat("png图片文件应存在", imgFile.exists() && imgFile.isFile && imgFile.name.endsWith(".png"))
     }
 }
