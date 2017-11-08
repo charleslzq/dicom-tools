@@ -1,6 +1,7 @@
 package com.github.charleslzq.dicom
 
 import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.CoreMatchers.notNullValue
 import org.hamcrest.collection.IsArrayWithSize.arrayWithSize
 import org.junit.Before
 import org.junit.Test
@@ -32,8 +33,9 @@ class DicomDataReaderTest {
 
         val dicomData = dicomDataReader.parse(dicomFile)
 
-        val tagMap = dicomData.metaData
-        assertThat("应至少读取一条tag信息", tagMap.isNotEmpty())
+        assertThat("病人信息不为空", dicomData.patient, notNullValue())
+        assertThat("研究信息不为空", dicomData.study, notNullValue())
+        assertThat("系列信息不为空", dicomData.series, notNullValue())
 
         val uri = dicomData.imageUri
         val imgFile = File(uri)

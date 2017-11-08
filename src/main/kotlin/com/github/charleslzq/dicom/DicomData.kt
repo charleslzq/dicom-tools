@@ -3,6 +3,8 @@ package com.github.charleslzq.dicom
 import java.net.URI
 
 data class DicomData(
-        val metaData: Map<String, DicomTagInfo>,
+        val patient: DicomPatient,
+        val study: DicomStudy,
+        val series: DicomSeries,
         val imageUri: URI
 )
