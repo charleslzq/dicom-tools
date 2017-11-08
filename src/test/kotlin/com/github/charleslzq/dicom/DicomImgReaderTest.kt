@@ -1,12 +1,11 @@
 package com.github.charleslzq.dicom
 
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.collection.IsArrayWithSize.arrayWithSize
 import org.junit.Before
 import org.junit.Test
 import org.springframework.util.ResourceUtils
 import java.io.File
-import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.collection.IsArrayWithSize.arrayWithSize
-import java.net.URI
 
 class DicomImgReaderTest {
     private val path = "classpath:image-000001.dcm"

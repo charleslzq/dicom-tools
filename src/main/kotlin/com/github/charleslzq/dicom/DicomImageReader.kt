@@ -6,18 +6,18 @@ import java.net.URI
 import java.nio.file.Paths
 import java.util.*
 
-class DicomImageReader(private val dirBase : String) {
+class DicomImageReader(private val dirBase: String) {
     private val dcm2jpg = Dcm2Jpg()
 
     init {
         dcm2jpg.initImageWriter("JPEG", "jpg", null, null, null)
         val dir = File(dirBase)
-        if ( !dir.exists() || dir.isFile) {
+        if (!dir.exists() || dir.isFile) {
             dir.mkdirs()
         }
     }
 
-    fun convert(dicomFile: File) : URI {
+    fun convert(dicomFile: File): URI {
         val fileName = UUID.randomUUID().toString().toUpperCase() + ".jpg"
         val filePath = Paths.get(dirBase, fileName)
         val destFile = filePath.toFile()

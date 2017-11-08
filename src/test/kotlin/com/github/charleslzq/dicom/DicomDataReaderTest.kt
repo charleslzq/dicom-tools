@@ -1,9 +1,7 @@
 package com.github.charleslzq.dicom
 
-import org.hamcrest.CoreMatchers.not
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.collection.IsArrayWithSize.arrayWithSize
-import org.hamcrest.collection.IsEmptyCollection.empty
 import org.junit.Before
 import org.junit.Test
 import org.springframework.util.ResourceUtils
