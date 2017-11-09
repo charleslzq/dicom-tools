@@ -34,7 +34,7 @@ class DicomDataFileStoreTest {
         val dicomData = dicomDataReader.parse(dicomFile, dirBase)
         dataStore.saveDicomData(dicomData)
 
-        assertThat("根目录下应有一个文件夹", dir.listFiles {file, name ->
+        assertThat("根目录下应有一个文件夹", dir.listFiles { file, name ->
             Paths.get(file.absolutePath, name).toFile().isDirectory
         }.size, `is`(1))
     }

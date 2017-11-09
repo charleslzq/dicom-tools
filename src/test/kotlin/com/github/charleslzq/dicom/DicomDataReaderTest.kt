@@ -4,8 +4,8 @@ import com.github.charleslzq.dicom.reader.DicomDataReader
 import com.github.charleslzq.dicom.reader.DicomImageReader
 import org.assertj.core.util.Lists
 import org.hamcrest.CoreMatchers.`is`
-import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.CoreMatchers.notNullValue
+import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.collection.IsArrayWithSize.arrayWithSize
 import org.junit.Before
 import org.junit.Test
