@@ -8,9 +8,8 @@ data class DicomSeriesMetaInfo(
         var time: String? = null,
         var description: String? = null,
         var imagePosition: String? = null,
-        var imageOrientation: String? = null,
-        var sliceThickness: String? = null,
-        var spacingBetweenSlices: String? = null,
-        var sliceLocation: String? = null,
-        var acquisition: String? = null
+        var imageOrientation: Float? = null,
+        var sliceThickness: Float? = null,
+        var spacingBetweenSlices: Float? = null,
+        var sliceLocation: Float? = null
 )

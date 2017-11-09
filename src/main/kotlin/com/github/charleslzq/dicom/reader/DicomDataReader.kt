@@ -26,78 +26,91 @@ class DicomDataReader(private val dicomImageReaders: List<DicomImageReader>) {
 
     private fun getPatient(tagMap: Map<Int, DicomTagInfo>): DicomPatientMetaInfo {
         val dicomPatient = DicomPatientMetaInfo()
-        getFromTagMap(tagMap, Tag.PatientID, dicomPatient::id::set)
-        getFromTagMap(tagMap, Tag.PatientName, dicomPatient::name::set)
-        getFromTagMap(tagMap, Tag.PatientAddress, dicomPatient::address::set)
-        getFromTagMap(tagMap, Tag.PatientBirthDate, dicomPatient::birthday::set)
-        getFromTagMap(tagMap, Tag.PatientBirthTime, dicomPatient::birthTime::set)
-        getFromTagMap(tagMap, Tag.PatientWeight, { value -> dicomPatient.weight = value.toDouble()})
-        getFromTagMap(tagMap, Tag.PatientPosition, dicomPatient::position::set)
-        getFromTagMap(tagMap, Tag.PatientSex, dicomPatient::sex::set)
-        getFromTagMap(tagMap, Tag.IssuerOfPatientID, dicomPatient::idIssuer::set)
-        getFromTagMap(tagMap, Tag.PregnancyStatus, dicomPatient::pregnancyStatus::set)
+        getStringFromTagMap(tagMap, Tag.PatientID, dicomPatient::id::set)
+        getStringFromTagMap(tagMap, Tag.PatientName, dicomPatient::name::set)
+        getStringFromTagMap(tagMap, Tag.PatientAddress, dicomPatient::address::set)
+        getStringFromTagMap(tagMap, Tag.PatientBirthDate, dicomPatient::birthday::set)
+        getStringFromTagMap(tagMap, Tag.PatientBirthTime, dicomPatient::birthTime::set)
+        getFloatFromTagMap(tagMap, Tag.PatientWeight, dicomPatient::weight::set)
+        getStringFromTagMap(tagMap, Tag.PatientPosition, dicomPatient::position::set)
+        getStringFromTagMap(tagMap, Tag.PatientSex, dicomPatient::sex::set)
+        getStringFromTagMap(tagMap, Tag.IssuerOfPatientID, dicomPatient::idIssuer::set)
+        getIntFromTagMap(tagMap, Tag.PregnancyStatus, dicomPatient::pregnancyStatus::set)
         return dicomPatient
     }
 
     private fun getStudy(tagMap: Map<Int, DicomTagInfo>): DicomStudyMetaInfo {
         val dicomStudy = DicomStudyMetaInfo()
-        getFromTagMap(tagMap, Tag.StudyID, dicomStudy::id::set)
-        getFromTagMap(tagMap, Tag.StudyInstanceUID, dicomStudy::instanceUID::set)
-        getFromTagMap(tagMap, Tag.AccessionNumber, dicomStudy::accessionNumber::set)
-        getFromTagMap(tagMap, Tag.ModalitiesInStudy, dicomStudy::modalities::set)
-        getFromTagMap(tagMap, Tag.BodyPartExamined, dicomStudy::bodyPart::set)
-        getFromTagMap(tagMap, Tag.PatientAge, { value -> dicomStudy.patientAge = value.substringBefore("Y").toInt() })
-        getFromTagMap(tagMap, Tag.StudyDate, dicomStudy::date::set)
-        getFromTagMap(tagMap, Tag.StudyTime, dicomStudy::time::set)
-        getFromTagMap(tagMap, Tag.StudyDescription, dicomStudy::description::set)
+        getStringFromTagMap(tagMap, Tag.StudyID, dicomStudy::id::set)
+        getStringFromTagMap(tagMap, Tag.StudyInstanceUID, dicomStudy::instanceUID::set)
+        getStringFromTagMap(tagMap, Tag.AccessionNumber, dicomStudy::accessionNumber::set)
+        getStringFromTagMap(tagMap, Tag.ModalitiesInStudy, dicomStudy::modalities::set)
+        getStringFromTagMap(tagMap, Tag.BodyPartExamined, dicomStudy::bodyPart::set)
+        getStringFromTagMap(tagMap, Tag.PatientAge, { value -> dicomStudy.patientAge = value.substringBefore("Y").toInt() })
+        getStringFromTagMap(tagMap, Tag.StudyDate, dicomStudy::date::set)
+        getStringFromTagMap(tagMap, Tag.StudyTime, dicomStudy::time::set)
+        getStringFromTagMap(tagMap, Tag.StudyDescription, dicomStudy::description::set)
         return dicomStudy
     }
 
     private fun getSeries(tagMap: Map<Int, DicomTagInfo>): DicomSeriesMetaInfo {
         val dicomSeries = DicomSeriesMetaInfo();
-        getFromTagMap(tagMap, Tag.SeriesNumber, { value -> dicomSeries.number = value.toInt() })
-        getFromTagMap(tagMap, Tag.SeriesInstanceUID, dicomSeries::instanceUID::set)
-        getFromTagMap(tagMap, Tag.Modality, dicomSeries::modality::set)
-        getFromTagMap(tagMap, Tag.ImageOrientation, dicomSeries::imageOrientation::set)
-        getFromTagMap(tagMap, Tag.ImagePosition, dicomSeries::imagePosition::set)
-        getFromTagMap(tagMap, Tag.SliceThickness, dicomSeries::sliceThickness::set)
-        getFromTagMap(tagMap, Tag.SpacingBetweenSlices, dicomSeries::spacingBetweenSlices::set)
-        getFromTagMap(tagMap, Tag.SliceLocation, dicomSeries::sliceLocation::set)
-        getFromTagMap(tagMap, Tag.MRAcquisitionType, dicomSeries::acquisition::set)
-        getFromTagMap(tagMap, Tag.SeriesDate, dicomSeries::date::set)
-        getFromTagMap(tagMap, Tag.SeriesTime, dicomSeries::time::set)
-        getFromTagMap(tagMap, Tag.SeriesDescription, dicomSeries::description::set)
+        getIntFromTagMap(tagMap, Tag.SeriesNumber, dicomSeries::number::set)
+        getStringFromTagMap(tagMap, Tag.SeriesInstanceUID, dicomSeries::instanceUID::set)
+        getStringFromTagMap(tagMap, Tag.Modality, dicomSeries::modality::set)
+        getFloatFromTagMap(tagMap, Tag.ImageOrientation, dicomSeries::imageOrientation::set)
+        getStringFromTagMap(tagMap, Tag.ImagePosition, dicomSeries::imagePosition::set)
+        getFloatFromTagMap(tagMap, Tag.SliceThickness, dicomSeries::sliceThickness::set)
+        getFloatFromTagMap(tagMap, Tag.SpacingBetweenSlices, dicomSeries::spacingBetweenSlices::set)
+        getFloatFromTagMap(tagMap, Tag.SliceLocation, dicomSeries::sliceLocation::set)
+        getStringFromTagMap(tagMap, Tag.SeriesDate, dicomSeries::date::set)
+        getStringFromTagMap(tagMap, Tag.SeriesTime, dicomSeries::time::set)
+        getStringFromTagMap(tagMap, Tag.SeriesDescription, dicomSeries::description::set)
         return dicomSeries
     }
 
     private fun getImage(tagMap: Map<Int, DicomTagInfo>): DicomImageMetaInfo {
         val dicomImage = DicomImageMetaInfo()
-        getFromTagMap(tagMap, Tag.ImageType, dicomImage::imageType::set)
-        getFromTagMap(tagMap, Tag.SOPInstanceUID, dicomImage::sopUID::set)
-        getFromTagMap(tagMap, Tag.ContentDate, dicomImage::date::set)
-        getFromTagMap(tagMap, Tag.ContentTime, dicomImage::time::set)
-        getFromTagMap(tagMap, Tag.InstanceNumber, dicomImage::instanceNumber::set)
-        getFromTagMap(tagMap, Tag.SamplesPerPixel, dicomImage::samplesPerPixel::set)
-        getFromTagMap(tagMap, Tag.PhotometricInterpretation, dicomImage::photometricInterpretation::set)
-        getFromTagMap(tagMap, Tag.Rows, dicomImage::rows::set)
-        getFromTagMap(tagMap, Tag.Columns, dicomImage::columns::set)
-        getFromTagMap(tagMap, Tag.PixelSpacing, dicomImage::pixelSpacing::set)
-        getFromTagMap(tagMap, Tag.BitsAllocated, dicomImage::bitsAllocated::set)
-        getFromTagMap(tagMap, Tag.BitsStored, dicomImage::bitsStored::set)
-        getFromTagMap(tagMap, Tag.HighBit, dicomImage::highBits::set)
-        getFromTagMap(tagMap, Tag.PixelRepresentation, dicomImage::pixelRepresentation::set)
-        getFromTagMap(tagMap, Tag.WindowCenter, dicomImage::windowCenter::set)
-        getFromTagMap(tagMap, Tag.WindowWidth, dicomImage::windowWidth::set)
-        getFromTagMap(tagMap, Tag.RescaleIntercept, dicomImage::rescaleIntercept::set)
-        getFromTagMap(tagMap, Tag.RescaleSlope, dicomImage::rescaleSlope::set)
-        getFromTagMap(tagMap, Tag.RescaleType, dicomImage::rescaleType::set)
+        getStringFromTagMap(tagMap, Tag.ImageType, dicomImage::imageType::set)
+        getStringFromTagMap(tagMap, Tag.SOPInstanceUID, dicomImage::sopUID::set)
+        getStringFromTagMap(tagMap, Tag.ContentDate, dicomImage::date::set)
+        getStringFromTagMap(tagMap, Tag.ContentTime, dicomImage::time::set)
+        getStringFromTagMap(tagMap, Tag.InstanceNumber, dicomImage::instanceNumber::set)
+        getIntFromTagMap(tagMap, Tag.SamplesPerPixel, dicomImage::samplesPerPixel::set)
+        getStringFromTagMap(tagMap, Tag.PhotometricInterpretation, dicomImage::photometricInterpretation::set)
+        getIntFromTagMap(tagMap, Tag.Rows, dicomImage::rows::set)
+        getIntFromTagMap(tagMap, Tag.Columns, dicomImage::columns::set)
+        getStringFromTagMap(tagMap, Tag.PixelSpacing, dicomImage::pixelSpacing::set)
+        getIntFromTagMap(tagMap, Tag.BitsAllocated, dicomImage::bitsAllocated::set)
+        getIntFromTagMap(tagMap, Tag.BitsStored, dicomImage::bitsStored::set)
+        getIntFromTagMap(tagMap, Tag.HighBit, dicomImage::highBit::set)
+        getIntFromTagMap(tagMap, Tag.PixelRepresentation, dicomImage::pixelRepresentation::set)
+        getStringFromTagMap(tagMap, Tag.WindowCenter, dicomImage::windowCenter::set)
+        getStringFromTagMap(tagMap, Tag.WindowWidth, dicomImage::windowWidth::set)
+        getFloatFromTagMap(tagMap, Tag.RescaleIntercept, dicomImage::rescaleIntercept::set)
+        getFloatFromTagMap(tagMap, Tag.RescaleSlope, dicomImage::rescaleSlope::set)
+        getStringFromTagMap(tagMap, Tag.RescaleType, dicomImage::rescaleType::set)
         return dicomImage
     }
 
-    private fun getFromTagMap(tagMap: Map<Int, DicomTagInfo>, tagNo: Int, consumer: (String) -> Unit) {
+    private fun getStringFromTagMap(tagMap: Map<Int, DicomTagInfo>, tagNo: Int, consumer: (String) -> Unit) {
         val tag = tagMap.get(tagNo)
         if (tag != null) {
             consumer(tag.stringValue)
+        }
+    }
+
+    private fun getIntFromTagMap(tagMap: Map<Int, DicomTagInfo>, tagNo: Int, consumer: (Int) -> Unit) {
+        val tag = tagMap.get(tagNo)
+        if (tag != null) {
+            consumer(tag.stringValue.toInt())
+        }
+    }
+
+    private fun getFloatFromTagMap(tagMap: Map<Int, DicomTagInfo>, tagNo: Int, consumer: (Float) -> Unit) {
+        val tag = tagMap.get(tagNo)
+        if (tag != null) {
+            consumer(tag.stringValue.toFloat())
         }
     }
 }

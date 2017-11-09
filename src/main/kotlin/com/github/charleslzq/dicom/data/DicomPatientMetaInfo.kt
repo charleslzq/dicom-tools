@@ -7,8 +7,8 @@ data class DicomPatientMetaInfo(
         var sex: String? = null,
         var birthday: String? = null,
         var birthTime: String? = null,
-        var weight: Double? = null,
+        var weight: Float? = null,
         var idIssuer: String? = null,
         var position: String? = null,
-        var pregnancyStatus: String? = null
+        var pregnancyStatus: Int? = null
 )
