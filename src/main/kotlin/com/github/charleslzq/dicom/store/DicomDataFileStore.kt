@@ -2,6 +2,7 @@ package com.github.charleslzq.dicom.store
 
 import com.github.charleslzq.dicom.data.*
 import com.google.common.collect.Lists
+import com.google.common.collect.Maps
 import com.google.gson.Gson
 import java.io.File
 import java.io.FileWriter
@@ -41,19 +42,23 @@ class DicomDataFileStore(val baseDir: String) : DicomDataStore {
         val studyDir = Paths.get(patientDir.absolutePath, studyId).toFile()
         val seriesDir = Paths.get(studyDir.absolutePath, seriesNumber.toString()).toFile()
         val imageDir = Paths.get(seriesDir.absolutePath, imageName).toFile()
-        createMetaIfNecessary(patientDir, dicomData.patientMetaInfo)
-        createMetaIfNecessary(studyDir, dicomData.studyMetaInfo)
-        createMetaIfNecessary(seriesDir, dicomData.seriesMetaInfo)
+        updateMeta(patientDir, dicomData.patientMetaInfo)
+        updateMeta(studyDir, dicomData.studyMetaInfo)
+        updateMeta(seriesDir, dicomData.seriesMetaInfo)
 
+        val newImages: MutableMap<String, URI> = Maps.newHashMap()
         if (!imageDir.exists() || imageDir.isFile) {
             imageDir.mkdir()
+        } else {
+            val oldImageMeta = loadMetaFile(imageDir.absolutePath, DicomImageMetaInfo::class.java)
+            newImages.putAll(oldImageMeta.files)
         }
-        val newImages = dicomData.imageMetaInfo.files.map {
+        newImages.putAll(dicomData.imageMetaInfo.files.map {
             it.key to copyFile(it.value, imageDir.absolutePath)
-        }.toMap()
+        }.toMap())
         dicomData.imageMetaInfo.files.clear()
         dicomData.imageMetaInfo.files.putAll(newImages)
-        createMetaIfNecessary(imageDir, dicomData.imageMetaInfo)
+        updateMeta(imageDir, dicomData.imageMetaInfo)
     }
 
     fun copyFile(uri: URI, newDir: String): URI {
@@ -110,16 +115,20 @@ class DicomDataFileStore(val baseDir: String) : DicomDataStore {
         }
     }
 
-    private fun createMetaIfNecessary(dir: File, target: Any) {
-        if (!metaFileExists(dir, metaFileName)) {
+    private fun updateMeta(dir: File, target: Any) {
+        if (metaFileExists(dir, metaFileName)) {
+            Paths.get(dir.absolutePath, metaFileName).toFile().delete()
+        } else {
             if (!dir.exists() || dir.isFile) {
                 dir.mkdirs()
             }
-            val metaFilePath = Paths.get(dir.absolutePath, metaFileName)
-            val content = gson.toJson(target)
-            FileWriter(metaFilePath.toFile()).use {
-                it.write(content)
-            }
         }
+
+        val metaFilePath = Paths.get(dir.absolutePath, metaFileName)
+        val content = gson.toJson(target)
+        FileWriter(metaFilePath.toFile()).use {
+            it.write(content)
+        }
+
     }
 }
