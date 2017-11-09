@@ -33,10 +33,12 @@ class DicomDataFileStoreTest {
         val dicomDataReader = DicomDataReader(Lists.newArrayList(dicomImageReader))
         val dicomData = dicomDataReader.parse(dicomFile, dirBase)
         dataStore.saveDicomData(dicomData)
+        dataStore.loadMetaFile()
 
         assertThat("根目录下应有一个文件夹", dir.listFiles { file, name ->
             Paths.get(file.absolutePath, name).toFile().isDirectory
         }.size, `is`(1))
+        assertThat("新信息已加载", dataStore.listPatient().isNotEmpty())
     }
 
     @Test

@@ -69,7 +69,8 @@ class DicomDataFileStore(val baseDir: String) : DicomDataStore {
         return filePath.toUri()
     }
 
-    fun loadMetaFile() {
+    override fun loadMetaFile() {
+        patients.clear()
         val storeDir = File(baseDir)
         if (storeDir.exists() && storeDir.isDirectory) {
             val patientsFromFile = storeDir.list(this::metaFileExists).map { patientDir ->

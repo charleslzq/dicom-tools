@@ -8,4 +8,5 @@ interface DicomDataStore {
     fun listPatient(): List<DicomPatient>
     fun getDicomImages(patientId: String, studyId: String?, seriesNo: Int?, imageName: String?, label: String?): List<URI>
     fun saveDicomData(dicomData: DicomData)
+    fun loadMetaFile()
 }
