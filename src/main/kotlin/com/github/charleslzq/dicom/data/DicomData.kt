@@ -1,4 +1,4 @@
-package com.github.charleslzq.dicom
+package com.github.charleslzq.dicom.data
 
 import java.net.URI
 

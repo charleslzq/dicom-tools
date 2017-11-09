@@ -1,5 +1,7 @@
 package com.github.charleslzq.dicom
 
+import com.github.charleslzq.dicom.reader.DicomDataReader
+import com.github.charleslzq.dicom.reader.DicomImageReader
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.CoreMatchers.notNullValue
 import org.hamcrest.collection.IsArrayWithSize.arrayWithSize
@@ -22,16 +24,18 @@ class DicomDataReaderTest {
         if (dir.exists() && dir.isDirectory) {
             dir.deleteRecursively()
         }
+        dir.mkdir()
     }
 
     @Test
     fun testReadDataSuccess() {
         val dicomFile = readFile()
-        val dicomDataReader = DicomDataReader(dirBase)
+        val dicomImageReader = DicomImageReader("PNG", "png")
+        val dicomDataReader = DicomDataReader(dicomImageReader)
         val dir = File(dirBase)
         assertThat("开始时目录为空", dir.listFiles(), arrayWithSize(0))
 
-        val dicomData = dicomDataReader.parse(dicomFile)
+        val dicomData = dicomDataReader.parse(dicomFile, dirBase)
 
         assertThat("病人信息不为空", dicomData.patient, notNullValue())
         assertThat("研究信息不为空", dicomData.study, notNullValue())

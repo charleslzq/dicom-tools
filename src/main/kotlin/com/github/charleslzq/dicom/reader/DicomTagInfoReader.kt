@@ -1,5 +1,6 @@
-package com.github.charleslzq.dicom
+package com.github.charleslzq.dicom.reader
 
+import com.github.charleslzq.dicom.data.DicomTagInfo
 import com.google.common.collect.Lists
 import org.dcm4che3.data.*
 import org.dcm4che3.io.DicomInputStream

@@ -1,4 +1,4 @@
-package com.github.charleslzq.dicom
+package com.github.charleslzq.dicom.reader
 
 import org.dcm4che3.io.DicomInputHandler
 import org.dcm4che3.io.DicomInputStream

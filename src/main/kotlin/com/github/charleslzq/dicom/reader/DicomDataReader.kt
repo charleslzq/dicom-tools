@@ -1,15 +1,15 @@
-package com.github.charleslzq.dicom
+package com.github.charleslzq.dicom.reader
 
+import com.github.charleslzq.dicom.data.*
 import org.dcm4che3.data.Tag
 import org.dcm4che3.io.DicomInputStream
 import java.io.File
 
-class DicomDataReader(imageFileBase: String) {
+class DicomDataReader(private val dicomImageReader: DicomImageReader) {
     private val dicomTagInfoReader = DicomTagInfoReader()
-    private val dicomImageReader = DicomImageReader(imageFileBase)
 
-    fun parse(dcmFile: File): DicomData {
-        val imageUri = dicomImageReader.convert(dcmFile)
+    fun parse(dcmFile: File, imageDir: String): DicomData {
+        val imageUri = dicomImageReader.convert(dcmFile, imageDir)
         val dicomInputStream = DicomInputStream(dcmFile)
         val tagMap = dicomTagInfoReader.parse(dicomInputStream).map { it.tag to it }.toMap()
         val patient = getPatient(tagMap)

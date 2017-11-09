@@ -1,5 +1,6 @@
 package com.github.charleslzq.dicom
 
+import com.github.charleslzq.dicom.reader.DicomTagInfoReader
 import org.dcm4che3.io.DicomInputStream
 import org.hamcrest.CoreMatchers.not
 import org.hamcrest.MatcherAssert.assertThat
