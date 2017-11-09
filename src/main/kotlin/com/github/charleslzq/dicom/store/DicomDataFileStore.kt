@@ -35,13 +35,13 @@ class DicomDataFileStore(val baseDir: String) : DicomDataStore {
 
     override fun saveDicomData(dicomData: DicomData) {
         val patientId = dicomData.patientMetaInfo.id
-        val studyId = dicomData.studyMetaInfo.id
-        val seriesNumber = dicomData.seriesMetaInfo.number
-        val imageName = dicomData.imageMetaInfo.name
+        val studyUID = dicomData.studyMetaInfo.instanceUID
+        val seriesUID = dicomData.seriesMetaInfo.instanceUID
+        val imageNum = dicomData.imageMetaInfo.instanceNumber
         val patientDir = Paths.get(baseDir, patientId).toFile()
-        val studyDir = Paths.get(patientDir.absolutePath, studyId).toFile()
-        val seriesDir = Paths.get(studyDir.absolutePath, seriesNumber.toString()).toFile()
-        val imageDir = Paths.get(seriesDir.absolutePath, imageName).toFile()
+        val studyDir = Paths.get(patientDir.absolutePath, studyUID).toFile()
+        val seriesDir = Paths.get(studyDir.absolutePath, seriesUID).toFile()
+        val imageDir = Paths.get(seriesDir.absolutePath, imageNum).toFile()
         updateMeta(patientDir, dicomData.patientMetaInfo)
         updateMeta(studyDir, dicomData.studyMetaInfo)
         updateMeta(seriesDir, dicomData.seriesMetaInfo)
