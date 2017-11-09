@@ -5,21 +5,27 @@ import org.dcm4che3.data.Tag
 import org.dcm4che3.io.DicomInputStream
 import java.io.File
 
-class DicomDataReader(private val dicomImageReader: DicomImageReader) {
+class DicomDataReader(private val dicomImageReaders: List<DicomImageReader>) {
     private val dicomTagInfoReader = DicomTagInfoReader()
 
     fun parse(dcmFile: File, imageDir: String): DicomData {
-        val imageUri = dicomImageReader.convert(dcmFile, imageDir)
         val dicomInputStream = DicomInputStream(dcmFile)
         val tagMap = dicomTagInfoReader.parse(dicomInputStream).map { it.tag to it }.toMap()
         val patient = getPatient(tagMap)
         val study = getStudy(tagMap)
         val series = getSeries(tagMap)
-        return DicomData(patient, study, series, imageUri)
+        val image = DicomImageMetaInfo()
+        image.name = dcmFile.nameWithoutExtension
+        image.files.put("raw", dcmFile.toURI())
+        dicomImageReaders.forEach {
+            val imageUri = it.convert(dcmFile, imageDir)
+            image.files.put(it.prefix, imageUri)
+        }
+        return DicomData(patient, study, series, image)
     }
 
-    private fun getPatient(tagMap: Map<Int, DicomTagInfo>): DicomPatient {
-        val dicomPatient = DicomPatient()
+    private fun getPatient(tagMap: Map<Int, DicomTagInfo>): DicomPatientMetaInfo {
+        val dicomPatient = DicomPatientMetaInfo()
         getFromTagMap(tagMap, Tag.PatientID, dicomPatient::id::set)
         getFromTagMap(tagMap, Tag.PatientName, dicomPatient::name::set)
         getFromTagMap(tagMap, Tag.PatientAddress, dicomPatient::address::set)
@@ -31,8 +37,8 @@ class DicomDataReader(private val dicomImageReader: DicomImageReader) {
         return dicomPatient
     }
 
-    private fun getStudy(tagMap: Map<Int, DicomTagInfo>): DicomStudy {
-        val dicomStudy = DicomStudy()
+    private fun getStudy(tagMap: Map<Int, DicomTagInfo>): DicomStudyMetaInfo {
+        val dicomStudy = DicomStudyMetaInfo()
         getFromTagMap(tagMap, Tag.StudyID, dicomStudy::id::set)
         getFromTagMap(tagMap, Tag.StudyInstanceUID, dicomStudy::instanceUID::set)
         getFromTagMap(tagMap, Tag.StudyDate, dicomStudy::date::set)
@@ -41,8 +47,8 @@ class DicomDataReader(private val dicomImageReader: DicomImageReader) {
         return dicomStudy
     }
 
-    private fun getSeries(tagMap: Map<Int, DicomTagInfo>): DicomSeries {
-        val dicomSeries = DicomSeries();
+    private fun getSeries(tagMap: Map<Int, DicomTagInfo>): DicomSeriesMetaInfo {
+        val dicomSeries = DicomSeriesMetaInfo();
         getFromTagMap(tagMap, Tag.SeriesNumber, { value -> dicomSeries.number = value.toInt() })
         getFromTagMap(tagMap, Tag.SeriesInstanceUID, dicomSeries::instanceUID::set)
         getFromTagMap(tagMap, Tag.SeriesDate, dicomSeries::date::set)
@@ -50,7 +56,6 @@ class DicomDataReader(private val dicomImageReader: DicomImageReader) {
         getFromTagMap(tagMap, Tag.SeriesDescription, dicomSeries::description::set)
         return dicomSeries
     }
-
 
     private fun getFromTagMap(tagMap: Map<Int, DicomTagInfo>, tagNo: Int, consumer: (String) -> Unit) {
         val tag = tagMap.get(tagNo)

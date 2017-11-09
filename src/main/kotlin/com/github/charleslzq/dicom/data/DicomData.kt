@@ -1,10 +1,8 @@
 package com.github.charleslzq.dicom.data
 
-import java.net.URI
-
 data class DicomData(
-        val patient: DicomPatient,
-        val study: DicomStudy,
-        val series: DicomSeries,
-        val imageUri: URI
+        val patientMetaInfo: DicomPatientMetaInfo,
+        val studyMetaInfo: DicomStudyMetaInfo,
+        val seriesMetaInfo: DicomSeriesMetaInfo,
+        val imageMetaInfo: DicomImageMetaInfo
 )

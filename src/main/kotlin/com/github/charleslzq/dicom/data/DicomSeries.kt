@@ -1,9 +1,8 @@
 package com.github.charleslzq.dicom.data
 
+import com.google.common.collect.Lists
+
 data class DicomSeries(
-        var number: Int? = null,
-        var instanceUID: String? = null,
-        var date: String? = null,
-        var time: String? = null,
-        var description: String? = null
+        val metaInfo: DicomSeriesMetaInfo,
+        val images: MutableList<DicomImageMetaInfo> = Lists.newArrayList()
 )

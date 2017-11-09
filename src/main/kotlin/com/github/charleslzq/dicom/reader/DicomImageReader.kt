@@ -8,7 +8,7 @@ import java.nio.file.Paths
 class DicomImageReader(
         formatName: String,
         private val suffix: String,
-        private val prefix: String = "",
+        val prefix: String = "default",
         clazz: String? = null,
         compressionType: String? = null,
         quality: Number? = null) {
@@ -19,7 +19,7 @@ class DicomImageReader(
     }
 
     fun convert(dicomFile: File, imageDir: String): URI {
-        val fileName = prefix + dicomFile.name + (if (suffix.startsWith(".")) suffix else "." + suffix)
+        val fileName = prefix + "-" + dicomFile.nameWithoutExtension + (if (suffix.startsWith(".")) suffix else "." + suffix)
         val filePath = Paths.get(imageDir, fileName)
         val destFile = filePath.toFile()
         dcm2jpg.convert(dicomFile, destFile)
