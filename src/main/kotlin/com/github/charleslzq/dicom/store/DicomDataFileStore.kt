@@ -4,6 +4,7 @@ import com.github.charleslzq.dicom.data.*
 import com.google.common.collect.Lists
 import com.google.common.collect.Maps
 import com.google.gson.Gson
+import org.springframework.beans.factory.InitializingBean
 import java.io.File
 import java.io.FileWriter
 import java.net.URI
@@ -13,7 +14,7 @@ import java.nio.file.StandardCopyOption
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
-class DicomDataFileStore(val baseDir: String) : DicomDataStore {
+class DicomDataFileStore(val baseDir: String) : DicomDataStore, InitializingBean {
     private val metaFileName = "meta.json"
     private val patients: MutableList<DicomPatient> = Lists.newArrayList()
     private val gson = Gson()
@@ -102,6 +103,10 @@ class DicomDataFileStore(val baseDir: String) : DicomDataStore {
             }
             needLoad.compareAndSet(true, false)
         }
+    }
+
+    override fun afterPropertiesSet() {
+        loadMetaFile()
     }
 
     private fun metaFileExists(dir: File, name: String): Boolean {

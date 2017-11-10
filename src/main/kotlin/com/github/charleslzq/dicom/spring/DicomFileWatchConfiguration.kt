@@ -27,7 +27,7 @@ open class DicomFileWatchConfiguration {
     @Bean
     @ConditionalOnMissingBean(name = arrayOf("fileWatchExecutor"))
     open fun fileWatchExecutor(): AsyncTaskExecutor {
-        return SimpleAsyncTaskExecutor()
+        return SimpleAsyncTaskExecutor("fileWatchExecutor-")
     }
 
     @Bean

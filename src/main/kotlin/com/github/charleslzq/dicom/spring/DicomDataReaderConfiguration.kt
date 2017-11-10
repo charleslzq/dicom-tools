@@ -37,7 +37,7 @@ open class DicomDataReaderConfiguration {
     @Bean
     @ConditionalOnMissingBean(name = arrayOf("dicomParseWorkerExecutor"))
     open fun dicomParseWorkerExecutor(): AsyncTaskExecutor {
-        return SimpleAsyncTaskExecutor()
+        return SimpleAsyncTaskExecutor("dicomParseWorkerExecutor-")
     }
 
     @Bean

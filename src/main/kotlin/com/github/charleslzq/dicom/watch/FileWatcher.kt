@@ -13,7 +13,7 @@ class FileWatcher(private val taskExecutor: AsyncTaskExecutor, private var autoS
     private val log = LoggerFactory.getLogger(this::class.java)
     private val watchService = FileSystems.getDefault().newWatchService()
     private val watchDirs: MutableMap<WatchKey, Pair<Path, FileChangeListener>> = Maps.newConcurrentMap()
-    var pause: AtomicBoolean = AtomicBoolean(true)
+    private var pause: AtomicBoolean = AtomicBoolean(true)
 
     fun register(path: String, listener: FileChangeListener, vararg events: WatchEvent.Kind<Path>) {
         val dir = File(path)
@@ -88,6 +88,7 @@ class FileWatcher(private val taskExecutor: AsyncTaskExecutor, private var autoS
                     }
                 }
             }
+            key.reset()
         }
     }
 
