@@ -52,7 +52,6 @@ class FileWatchTest {
         var fileCreated = false
 
         override fun onCreate(basePath: Path, name: String) {
-            println(basePath + name)
             val file = Paths.get(basePath.toFile().absolutePath, name).toFile()
             if (file.isDirectory) {
                 fileWatcher.register(file.absolutePath, this, StandardWatchEventKinds.ENTRY_CREATE)
