@@ -21,16 +21,8 @@ class DicomDataFileStore(val baseDir: String) : DicomDataStore {
         return patients.toList()
     }
 
-    override fun getDicomImages(patientId: String, studyId: String?, seriesNo: Int?, imageName: String?, label: String?): List<URI> {
-        return patients.filter { (metaInfo, _) -> metaInfo.id == patientId }
-                .map(DicomPatient::studies).flatMap { it -> it }
-                .filter { (metaInfo, _) -> studyId == null || metaInfo.id == studyId }
-                .map(DicomStudy::series).flatMap { it -> it }
-                .filter { (metaInfo, _) -> seriesNo == null || metaInfo.number == seriesNo }
-                .map(DicomSeries::images).flatMap { it -> it }
-                .filter { (name, _) -> imageName == null || name == imageName }
-                .map { it -> if (label == null) it.files.values else Lists.newArrayList(it.files[label]) }
-                .flatMap { it -> it }.filterNotNull().toList()
+    override fun findPatient(patientId: String): DicomPatient? {
+        return patients.find { (metaInfo, _) -> metaInfo.id == patientId }
     }
 
     override fun saveDicomData(dicomData: DicomData) {
@@ -119,10 +111,8 @@ class DicomDataFileStore(val baseDir: String) : DicomDataStore {
     private fun updateMeta(dir: File, target: Any) {
         if (metaFileExists(dir, metaFileName)) {
             Paths.get(dir.absolutePath, metaFileName).toFile().delete()
-        } else {
-            if (!dir.exists() || dir.isFile) {
-                dir.mkdirs()
-            }
+        } else if (!dir.exists() || dir.isFile) {
+            dir.mkdirs()
         }
 
         val metaFilePath = Paths.get(dir.absolutePath, metaFileName)

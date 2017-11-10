@@ -5,16 +5,11 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.collection.IsArrayWithSize.arrayWithSize
 import org.junit.Before
 import org.junit.Test
-import org.springframework.util.ResourceUtils
 import java.io.File
 
 class DicomImgReaderTest {
     private val path = "classpath:image-000001.dcm"
     private val dirBase = "/tmp/dicom"
-
-    private fun readFile(): File {
-        return ResourceUtils.getFile(path)
-    }
 
     @Before
     fun setup() {
@@ -27,7 +22,7 @@ class DicomImgReaderTest {
 
     @Test
     fun testImgGenerateSuccess() {
-        val dicomFile = readFile()
+        val dicomFile = TestUtil.readFile(path)
         val dicomImageReader = DicomImageReader("PNG", "png")
         val dir = File(dirBase)
         assertThat("开始时目录为空", dir.listFiles(), arrayWithSize(0))

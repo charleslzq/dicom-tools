@@ -9,16 +9,11 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.collection.IsArrayWithSize.arrayWithSize
 import org.junit.Before
 import org.junit.Test
-import org.springframework.util.ResourceUtils
 import java.io.File
 
 class DicomDataReaderTest {
     private val path = "classpath:image-000001.dcm"
     private val dirBase = "/tmp/dicom"
-
-    private fun readFile(): File {
-        return ResourceUtils.getFile(path)
-    }
 
     @Before
     fun setup() {
@@ -31,7 +26,7 @@ class DicomDataReaderTest {
 
     @Test
     fun testReadDataSuccess() {
-        val dicomFile = readFile()
+        val dicomFile = TestUtil.readFile(path)
         val dicomImageReader = DicomImageReader("PNG", "png")
         val dicomDataReader = DicomDataReader(Lists.newArrayList(dicomImageReader))
         val dir = File(dirBase)
