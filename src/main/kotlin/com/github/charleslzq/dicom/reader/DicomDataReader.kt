@@ -9,19 +9,20 @@ class DicomDataReader(private val dicomImageReaders: List<DicomImageReader>) {
     private val dicomTagInfoReader = DicomTagInfoReader()
 
     fun parse(dcmFile: File, imageDir: String): DicomData {
-        val dicomInputStream = DicomInputStream(dcmFile)
-        val tagMap = dicomTagInfoReader.parse(dicomInputStream).map { it.tag to it }.toMap()
-        val patient = getPatient(tagMap)
-        val study = getStudy(tagMap)
-        val series = getSeries(tagMap)
-        val image = getImage(tagMap)
-        image.name = dcmFile.nameWithoutExtension
-        image.files.put("raw", dcmFile.toURI())
-        dicomImageReaders.forEach {
-            val imageUri = it.convert(dcmFile, imageDir)
-            image.files.put(it.prefix, imageUri)
+        DicomInputStream(dcmFile).use {
+            val tagMap = dicomTagInfoReader.parse(it).map { it.tag to it }.toMap()
+            val patient = getPatient(tagMap)
+            val study = getStudy(tagMap)
+            val series = getSeries(tagMap)
+            val image = getImage(tagMap)
+            image.name = dcmFile.nameWithoutExtension
+            image.files.put("raw", dcmFile.toURI())
+            dicomImageReaders.forEach {
+                val imageUri = it.convert(dcmFile, imageDir)
+                image.files.put(it.prefix, imageUri)
+            }
+            return DicomData(patient, study, series, image)
         }
-        return DicomData(patient, study, series, image)
     }
 
     private fun getPatient(tagMap: Map<Int, DicomTagInfo>): DicomPatientMetaInfo {
