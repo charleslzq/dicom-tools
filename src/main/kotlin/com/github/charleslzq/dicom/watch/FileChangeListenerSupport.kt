@@ -4,15 +4,16 @@ import java.nio.file.Path
 
 abstract class FileChangeListenerSupport : FileChangeListener {
 
-    override fun onCreate(path: Path) {
+    override fun onCreate(basePath: Path, name: String) {
 
     }
 
-    override fun onModify(path: Path) {
+    override fun onModify(basePath: Path, name: String) {
 
     }
 
-    override fun onDelete(path: Path) {
+    override fun onDelete(basePath: Path, name: String) {
 
     }
+
 }

@@ -30,21 +30,36 @@ class FileWatchTest {
         val dir = File(watchBase)
         val rawFile = TestUtil.readFile(rawFilePath)
         val fileWathcer = FileWatcher(SimpleAsyncTaskExecutor(), true)
-        val listener = SimpleListener()
+        val listener = SimpleListener(fileWathcer)
+        val testDir = Paths.get(dir.absolutePath, "test").toFile()
+        if (testDir.exists()) {
+            testDir.deleteRecursively()
+        }
         fileWathcer.register(dir.absolutePath, listener, StandardWatchEventKinds.ENTRY_CREATE)
         fileWathcer.start()
-        Files.copy(rawFile.toPath(), Paths.get(dir.absolutePath, rawFile.name))
+        testDir.mkdirs()
+        Thread.sleep(1000)
+
+        Files.copy(rawFile.toPath(), Paths.get(dir.absolutePath, "test", rawFile.name))
 
         Thread.sleep(1000)
         assertThat("检测到文件创建事件", listener.fileCreated)
     }
 
-    class SimpleListener : FileChangeListenerSupport() {
+    class SimpleListener(
+            private val fileWatcher: FileWatcher
+    ) : FileChangeListenerSupport() {
         var fileCreated = false
 
-        override fun onCreate(path: Path) {
-            println(path)
-            fileCreated = true
+        override fun onCreate(basePath: Path, name: String) {
+            println(basePath + name)
+            val file = Paths.get(basePath.toFile().absolutePath, name).toFile()
+            if (file.isDirectory) {
+                fileWatcher.register(file.absolutePath, this, StandardWatchEventKinds.ENTRY_CREATE)
+            } else {
+                fileCreated = true
+            }
+
         }
     }
 }
