@@ -21,11 +21,15 @@ class DicomDataFileStore(val baseDir: String) : DicomDataStore, InitializingBean
     private var needLoad = AtomicBoolean(true)
 
     override fun listPatient(): List<DicomPatient> {
-        return patients.toList()
+        synchronized(patients) {
+            return patients.toList()
+        }
     }
 
     override fun findPatient(patientId: String): DicomPatient? {
-        return patients.find { it.metaInfo.id == patientId }
+        synchronized(patients) {
+            return patients.find { it.metaInfo.id == patientId }
+        }
     }
 
     override fun saveDicomData(dicomData: DicomData) {
