@@ -24,7 +24,7 @@ open class DicomDataReaderConfiguration {
     @Bean
     open fun dicomDataReader(): DicomDataReader {
         val imageConfigList = dicomImageProperties.configs
-        if (imageConfigList.find { it.label == "default" } == null) {
+        if (imageConfigList.find { it.label == "default" } == null && dicomImageProperties.useDefault) {
             imageConfigList.add(DicomImageConfig())
         }
         val imageReaderList = imageConfigList.map {

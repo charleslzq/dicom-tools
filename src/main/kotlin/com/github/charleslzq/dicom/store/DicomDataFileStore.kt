@@ -25,7 +25,7 @@ class DicomDataFileStore(val baseDir: String) : DicomDataStore, InitializingBean
     }
 
     override fun findPatient(patientId: String): DicomPatient? {
-        return patients.find { (metaInfo, _) -> metaInfo.id == patientId }
+        return patients.find { it.metaInfo.id == patientId }
     }
 
     override fun saveDicomData(dicomData: DicomData) {

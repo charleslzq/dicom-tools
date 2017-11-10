@@ -6,7 +6,7 @@
 
     <groupId>com.github.charleslzq</groupId>
     <artifactId>dicom-tools</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.2-SNAPSHOT</version>
 
     <properties>
         <kotlin.version>1.1.51</kotlin.version>

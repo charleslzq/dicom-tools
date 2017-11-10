@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "dicom.image")
 data class DicomImageProperties(
+        var useDefault: Boolean = true,
         var configs: MutableList<DicomImageConfig> = Lists.newArrayList(),
         var imgTmpDir: String = "/tmp/dicom/images"
 )
