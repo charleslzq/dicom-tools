@@ -29,6 +29,7 @@ class DicomParseWorker(
             log.info("Complete {} task(s), using {} second(s), average {} second(s) per task",
                     stopWatch.taskCount, stopWatch.totalTimeSeconds, stopWatch.totalTimeSeconds / stopWatch.taskCount)
         }
+        log.info("Task for {} submitted", dcmFile.absolutePath)
     }
 
 }

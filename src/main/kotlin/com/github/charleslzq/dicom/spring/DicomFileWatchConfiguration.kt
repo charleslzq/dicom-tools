@@ -11,11 +11,12 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.core.task.SimpleAsyncTaskExecutor
+import java.nio.file.Paths
 import java.nio.file.StandardWatchEventKinds
 
 @Configuration
 @ConditionalOnProperty(
-        value = "dicom.watch.paths"
+        value = "dicom.watch.enable"
 )
 @EnableConfigurationProperties(DicomFileWatchProperties::class)
 open class DicomFileWatchConfiguration {
@@ -37,6 +38,7 @@ open class DicomFileWatchConfiguration {
         var fileWatcher = FileWatcher(asyncTaskExecutor, dicomFileWatchProperties.autoStart)
         val listener = DicomFileListener(dicomParseWorker, fileWatcher)
         dicomFileWatchProperties.paths.forEach {
+            Paths.get(it).toFile().mkdirs()
             fileWatcher.register(it, listener, StandardWatchEventKinds.ENTRY_CREATE)
         }
         return fileWatcher

@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.core.task.SimpleAsyncTaskExecutor
+import java.nio.file.Paths
 
 @Configuration
 @EnableConfigurationProperties(DicomImageProperties::class)
@@ -45,6 +46,7 @@ open class DicomDataReaderConfiguration {
             dicomDataReader: DicomDataReader,
             dicomDataStore: DicomDataStore
     ): DicomParseWorker {
+        Paths.get(dicomImageProperties.imgTmpDir).toFile().mkdirs()
         return DicomParseWorker(
                 dicomDataReader,
                 dicomDataStore,

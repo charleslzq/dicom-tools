@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.nio.file.Paths
 
 @Configuration
 @ConditionalOnMissingBean(DicomDataStore::class)
@@ -18,6 +19,7 @@ open class DicomStoreConfiguration {
 
     @Bean
     open fun dicomDataFileStore(): DicomDataStore {
+        Paths.get(dicomFileStoreProperties.dir).toFile().mkdirs()
         return DicomDataFileStore(dicomFileStoreProperties.dir)
     }
 

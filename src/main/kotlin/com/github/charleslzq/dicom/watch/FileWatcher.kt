@@ -26,6 +26,7 @@ class FileWatcher(private val taskExecutor: AsyncTaskExecutor, private var autoS
             if (events.isNotEmpty()) {
                 val key = pathToMonitor.register(watchService, events)
                 watchDirs.put(key, Pair(dir.toPath(), listener))
+                log.info("Start to monitor directory {}", dir.absolutePath)
             } else {
                 log.warn("No evnet configured for {}, will not register", dir.absolutePath)
             }
@@ -48,6 +49,7 @@ class FileWatcher(private val taskExecutor: AsyncTaskExecutor, private var autoS
         if (pause.get()) {
             taskExecutor.submit(this::work)
             pause.set(false)
+            log.info("File Watcher started")
         }
     }
 
@@ -62,6 +64,7 @@ class FileWatcher(private val taskExecutor: AsyncTaskExecutor, private var autoS
 
     override fun stop() {
         pause.set(true)
+        log.info("File Watcher stopped")
     }
 
     override fun getPhase(): Int {
