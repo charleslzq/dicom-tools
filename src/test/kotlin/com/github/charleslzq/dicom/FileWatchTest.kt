@@ -30,11 +30,12 @@ class FileWatchTest {
         val dir = File(watchBase)
         val rawFile = TestUtil.readFile(rawFilePath)
         val fileWathcer = FileWatcher(SimpleAsyncTaskExecutor(), true)
-        var listener = SimpleListener()
+        val listener = SimpleListener()
         fileWathcer.register(dir.absolutePath, listener, StandardWatchEventKinds.ENTRY_CREATE)
         fileWathcer.start()
         Files.copy(rawFile.toPath(), Paths.get(dir.absolutePath, rawFile.name))
 
+        Thread.sleep(1000)
         assertThat("检测到文件创建事件", listener.fileCreated)
     }
 
