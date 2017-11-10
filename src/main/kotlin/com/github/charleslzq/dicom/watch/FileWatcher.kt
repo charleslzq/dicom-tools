@@ -17,16 +17,20 @@ class FileWatcher(private val taskExecutor: AsyncTaskExecutor, private var autoS
 
     fun register(path: String, listener: FileChangeListener, vararg events: WatchEvent.Kind<Path>) {
         val dir = File(path)
+        register(dir, listener, *events)
+    }
+
+    fun register(dir: File, listener: FileChangeListener, vararg events: WatchEvent.Kind<Path>) {
         if (dir.exists() && dir.isDirectory) {
             val pathToMonitor = dir.toPath()
             if (events.isNotEmpty()) {
                 val key = pathToMonitor.register(watchService, events)
                 listeners.put(key, listener)
             } else {
-                log.warn("No evnet configured for {}, will not register", path)
+                log.warn("No evnet configured for {}, will not register", dir.absolutePath)
             }
         } else {
-            log.warn("Target not exist or not directory: {}", path)
+            log.warn("Target not exist or not directory: {}", dir.absolutePath)
         }
     }
 

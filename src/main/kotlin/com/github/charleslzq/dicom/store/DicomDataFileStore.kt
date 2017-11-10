@@ -11,11 +11,13 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 class DicomDataFileStore(val baseDir: String) : DicomDataStore {
     private val metaFileName = "meta.json"
     private val patients: MutableList<DicomPatient> = Lists.newArrayList()
     private val gson = Gson()
+    private var needLoad = AtomicBoolean(true)
 
     override fun listPatient(): List<DicomPatient> {
         return patients.toList()
@@ -51,9 +53,10 @@ class DicomDataFileStore(val baseDir: String) : DicomDataStore {
         dicomData.imageMetaInfo.files.clear()
         dicomData.imageMetaInfo.files.putAll(newImages)
         updateMeta(imageDir, dicomData.imageMetaInfo)
+        needLoad.set(true)
     }
 
-    fun copyFile(uri: URI, newDir: String): URI {
+    private fun copyFile(uri: URI, newDir: String): URI {
         val rawPath = Paths.get(uri)
         val fileName = rawPath.toFile().name
         val filePath = Paths.get(newDir, fileName)
@@ -62,37 +65,42 @@ class DicomDataFileStore(val baseDir: String) : DicomDataStore {
     }
 
     override fun loadMetaFile() {
-        patients.clear()
-        val storeDir = File(baseDir)
-        if (storeDir.exists() && storeDir.isDirectory) {
-            val patientsFromFile = storeDir.list(this::metaFileExists).map { patientDir ->
-                val patientPath = Paths.get(baseDir, patientDir)
-                val patientMeta = loadMetaFile(patientPath.toFile().absolutePath, DicomPatientMetaInfo::class.java)
-                val studies = patientPath.toFile().list(this::metaFileExists).map { studyDir ->
-                    val studyPath = Paths.get(baseDir, patientDir, studyDir)
-                    val studyMeta = loadMetaFile(studyPath.toFile().absolutePath, DicomStudyMetaInfo::class.java)
-                    val series = studyPath.toFile().list(this::metaFileExists).map { seriesDir ->
-                        val seriesPath = Paths.get(baseDir, patientDir, studyDir, seriesDir)
-                        val seriesMeta = loadMetaFile(seriesPath.toFile().absolutePath, DicomSeriesMetaInfo::class.java)
-                        val images = seriesPath.toFile().list(this::metaFileExists).map { imageDir ->
-                            val imagePath = Paths.get(seriesPath.toFile().absolutePath, imageDir)
-                            loadMetaFile(imagePath.toFile().absolutePath, DicomImageMetaInfo::class.java)
+        if (needLoad.get()) {
+            synchronized(patients) {
+                patients.clear()
+                val storeDir = File(baseDir)
+                if (storeDir.exists() && storeDir.isDirectory) {
+                    val patientsFromFile = storeDir.list(this::metaFileExists).map { patientDir ->
+                        val patientPath = Paths.get(baseDir, patientDir)
+                        val patientMeta = loadMetaFile(patientPath.toFile().absolutePath, DicomPatientMetaInfo::class.java)
+                        val studies = patientPath.toFile().list(this::metaFileExists).map { studyDir ->
+                            val studyPath = Paths.get(baseDir, patientDir, studyDir)
+                            val studyMeta = loadMetaFile(studyPath.toFile().absolutePath, DicomStudyMetaInfo::class.java)
+                            val series = studyPath.toFile().list(this::metaFileExists).map { seriesDir ->
+                                val seriesPath = Paths.get(baseDir, patientDir, studyDir, seriesDir)
+                                val seriesMeta = loadMetaFile(seriesPath.toFile().absolutePath, DicomSeriesMetaInfo::class.java)
+                                val images = seriesPath.toFile().list(this::metaFileExists).map { imageDir ->
+                                    val imagePath = Paths.get(seriesPath.toFile().absolutePath, imageDir)
+                                    loadMetaFile(imagePath.toFile().absolutePath, DicomImageMetaInfo::class.java)
+                                }.toList()
+                                val dicomSeries = DicomSeries(seriesMeta)
+                                dicomSeries.images.addAll(images)
+                                dicomSeries
+                            }.toList()
+                            val dicomStudy = DicomStudy(studyMeta)
+                            dicomStudy.series.addAll(series)
+                            dicomStudy
                         }.toList()
-                        val dicomSeries = DicomSeries(seriesMeta)
-                        dicomSeries.images.addAll(images)
-                        dicomSeries
+                        val dicomPatient = DicomPatient(patientMeta)
+                        dicomPatient.studies.addAll(studies)
+                        dicomPatient
                     }.toList()
-                    val dicomStudy = DicomStudy(studyMeta)
-                    dicomStudy.series.addAll(series)
-                    dicomStudy
-                }.toList()
-                val dicomPatient = DicomPatient(patientMeta)
-                dicomPatient.studies.addAll(studies)
-                dicomPatient
-            }.toList()
-            patients.addAll(patientsFromFile)
-        } else {
-            storeDir.mkdirs()
+                    patients.addAll(patientsFromFile)
+                } else {
+                    storeDir.mkdirs()
+                }
+            }
+            needLoad.compareAndSet(true, false)
         }
     }
 
