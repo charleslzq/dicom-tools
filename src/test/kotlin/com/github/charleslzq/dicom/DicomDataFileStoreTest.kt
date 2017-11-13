@@ -1,8 +1,13 @@
 package com.github.charleslzq.dicom
 
+import com.github.charleslzq.dicom.data.DicomImageMetaInfo
+import com.github.charleslzq.dicom.data.DicomPatient
+import com.github.charleslzq.dicom.data.DicomSeries
+import com.github.charleslzq.dicom.data.DicomStudy
 import com.github.charleslzq.dicom.reader.DicomDataReader
 import com.github.charleslzq.dicom.reader.DicomImageReader
 import com.github.charleslzq.dicom.store.DicomDataFileStore
+import com.github.charleslzq.dicom.store.DicomDataListener
 import com.github.charleslzq.dicom.store.LocalFileSaveHandler
 import com.google.common.collect.Lists
 import org.hamcrest.CoreMatchers.`is`
@@ -23,7 +28,7 @@ class DicomDataFileStoreTest {
             dir.deleteRecursively()
         }
         dir.mkdir()
-        val dataStore = DicomDataFileStore(dirBase, LocalFileSaveHandler())
+        val dataStore = DicomDataFileStore(dirBase, LocalFileSaveHandler(), Lists.newArrayList(SimpleStoreListener()))
         val dicomFile = TestUtil.readFile(path)
         val dicomImageReader = DicomImageReader("PNG", "png")
         val dicomDataReader = DicomDataReader(Lists.newArrayList(dicomImageReader))
@@ -48,5 +53,23 @@ class DicomDataFileStoreTest {
         assertThat("有一个系列", patients[0].studies[0].series.size, `is`(1))
         assertThat("有一个图像", patients[0].studies[0].series[0].images.size, `is`(1))
         assertThat("有两个文件", patients[0].studies[0].series[0].images[0].files.size, `is`(2))
+    }
+
+    class SimpleStoreListener: DicomDataListener {
+        override fun onPatientCreate(dicomPatient: DicomPatient) {
+            println(dicomPatient.toString())
+        }
+
+        override fun onStudyCreate(patientId: String, dicomStudy: DicomStudy) {
+            println(dicomStudy.toString())
+        }
+
+        override fun onSeriesCreate(patientId: String, studyId: String, series: DicomSeries) {
+            println(series.toString())
+        }
+
+        override fun onImageCreate(patientId: String, studyId: String, seriesId: String, dicomImageMetaInfo: DicomImageMetaInfo) {
+            println(dicomImageMetaInfo.toString())
+        }
     }
 }

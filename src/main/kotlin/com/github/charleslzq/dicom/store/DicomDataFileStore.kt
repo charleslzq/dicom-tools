@@ -1,6 +1,9 @@
 package com.github.charleslzq.dicom.store
 
 import com.github.charleslzq.dicom.data.*
+import com.google.common.collect.Lists
+import com.google.common.collect.MapDifference
+import com.google.common.collect.Maps
 import com.google.gson.Gson
 import org.springframework.beans.factory.InitializingBean
 import java.io.File
@@ -12,7 +15,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class DicomDataFileStore(
         private val baseDir: String,
-        private val saveHandler: DicomImageFileSaveHandler
+        private val saveHandler: DicomImageFileSaveHandler,
+        val listeners: MutableList<DicomDataListener> = Lists.newArrayList()
 ) : DicomDataStore, InitializingBean {
     private val metaFileName = "meta.json"
     private var dicomStore = DicomStore()
@@ -20,19 +24,33 @@ class DicomDataFileStore(
     private var needLoad = AtomicBoolean(true)
 
     override fun getStoreData(): DicomStore {
-        return dicomStore
+        synchronized(dicomStore) {
+            return dicomStore
+        }
     }
 
     override fun getPatient(patientId: String): DicomPatient? {
-        return dicomStore.patients.find { it.metaInfo.id == patientId }
+        return getPatientFromStore(patientId, dicomStore)
+    }
+
+    private fun getPatientFromStore(patientId: String, store: DicomStore): DicomPatient? {
+        return store.patients.find { it.metaInfo.id == patientId }
     }
 
     override fun getStudy(patientId: String, studyId: String): DicomStudy? {
-        return getPatient(patientId)?.studies?.find { it.metaInfo.instanceUID == studyId }
+        return getStudyFromStore(patientId, studyId, dicomStore)
+    }
+
+    private fun getStudyFromStore(patientId: String, studyId: String, store: DicomStore): DicomStudy? {
+        return getPatientFromStore(patientId, store)?.studies?.find { it.metaInfo.instanceUID == studyId }
     }
 
     override fun getSeries(patientId: String, studyId: String, seriesId: String): DicomSeries? {
-        return getStudy(patientId, studyId)?.series?.find { it.metaInfo.instanceUID == seriesId }
+        return getSeriesFromStore(patientId, studyId, seriesId, dicomStore)
+    }
+
+    private fun getSeriesFromStore(patientId: String, studyId: String, seriesId: String, store: DicomStore): DicomSeries? {
+        return getStudyFromStore(patientId, studyId, store)?.series?.find { it.metaInfo.instanceUID == seriesId }
     }
 
     override fun loadStoreMeta(): DicomStoreMetaInfo? {
@@ -75,6 +93,7 @@ class DicomDataFileStore(
         patient.metaInfo.updateTime.putAll(patient.studies.map { it.metaInfo.instanceUID!! to updateTime }.toMap())
         updateMeta(patientDir, patient.metaInfo)
         updateStoreMetaTime(patientId, updateTime)
+
     }
 
     override fun saveStudy(patientId: String, study: DicomStudy) {
@@ -186,8 +205,10 @@ class DicomDataFileStore(
                         null
                     }
                 }.filterNotNull().toMutableList()
+                val newStore = DicomStore(storeMeta, patientList)
                 synchronized(dicomStore) {
-                    dicomStore = DicomStore(storeMeta, patientList)
+                    detectChanges(newStore)
+                    dicomStore = newStore
                     needLoad.compareAndSet(true, false)
                 }
             }
@@ -267,5 +288,60 @@ class DicomDataFileStore(
             seriesMeta.updateTime[imageNum] = updateTime
             updateMeta(seriesDir, seriesMeta)
         }
+    }
+
+    private fun detectChanges(store: DicomStore) {
+        val patientCompareResult = compare(dicomStore.metaInfo.updateTime, store.metaInfo.updateTime)
+        patientCompareResult.first.mapNotNull { getPatientFromStore(it.key, store) }
+                .forEach { patient -> listeners.forEach { it.onPatientCreate(patient) } }
+        patientCompareResult.third.forEach { id, _ -> listeners.forEach { it.onPatientDelete(id) } }
+        patientCompareResult.second.forEach { patientId, _ ->
+            val oldPatient = getPatient(patientId)
+            val newPatient = getPatientFromStore(patientId, store)
+            if (oldPatient != null && newPatient != null) {
+                listeners.forEach { it.onPatientUpdate(oldPatient, newPatient) }
+                val studyCompareResult = compare(oldPatient.metaInfo.updateTime, newPatient.metaInfo.updateTime)
+                studyCompareResult.first.mapNotNull { getStudyFromStore(patientId, it.key, store) }
+                        .forEach { study -> listeners.forEach { it.onStudyCreate(patientId, study) } }
+                studyCompareResult.third.forEach { studyId, _ -> listeners.forEach { it.onStudyDelete(patientId, studyId) } }
+                studyCompareResult.second.forEach { studyId, _ ->
+                    val oldStudy = getStudy(patientId, studyId)
+                    val newStudy = getStudyFromStore(patientId, studyId, store)
+                    if (oldStudy != null && newStudy != null) {
+                        listeners.forEach { it.onStudyUpdate(patientId, oldStudy, newStudy) }
+                        val seriesCompareResult = compare(oldStudy.metaInfo.updateTime, newStudy.metaInfo.updateTime)
+                        seriesCompareResult.first.mapNotNull { getSeriesFromStore(patientId, studyId, it.key, store) }
+                                .forEach { series -> listeners.forEach { it.onSeriesCreate(patientId, studyId, series) } }
+                        seriesCompareResult.third.forEach { seriesId, _ -> listeners.forEach { it.onSeriesDelete(patientId, studyId, seriesId) } }
+                        seriesCompareResult.second.forEach { seriesId, _ ->
+                            val oldSeries = getSeries(patientId, studyId, seriesId)
+                            val newSeries = getSeriesFromStore(patientId, studyId, seriesId, store)
+                            if (oldSeries != null && newSeries != null) {
+                                listeners.forEach { it.onSeriesUpdate(patientId, studyId, oldSeries, newSeries) }
+                                val imagesCompareResult = compare(oldSeries.metaInfo.updateTime, newSeries.metaInfo.updateTime)
+                                imagesCompareResult.first.mapNotNull { (imageNum, _) -> newSeries.images.find { it.instanceNumber == imageNum } }
+                                        .forEach { image -> listeners.forEach { it.onImageCreate(patientId, studyId, seriesId, image) } }
+                                imagesCompareResult.third.forEach { imageNum, _ -> listeners.forEach { it.onImageDelete(patientId, studyId, seriesId, imageNum) } }
+                                imagesCompareResult.second.forEach { imageNum, _ ->
+                                    val oldImage = oldSeries.images.find { it.instanceNumber == imageNum }
+                                    val newImage = newSeries.images.find { it.instanceNumber == imageNum }
+                                    if (oldImage != null && newImage != null) {
+                                        listeners.forEach { it.onImageUpdate(patientId, studyId, seriesId, oldImage, newImage) }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun <S, T> compare(oldMap: MutableMap<S, T>, newMap: MutableMap<S, T>): Triple<Map<S, T>, Map<S, MapDifference.ValueDifference<T>>, Map<S, T>> {
+        val mapDifference = Maps.difference(oldMap, newMap)
+        val entriesToCreate = mapDifference.entriesOnlyOnRight()
+        val entriesToUpdate = mapDifference.entriesDiffering()
+        val entriesToDelete = mapDifference.entriesOnlyOnLeft()
+        return Triple(entriesToCreate, entriesToUpdate, entriesToDelete)
     }
 }

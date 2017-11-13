@@ -1,6 +1,6 @@
 package com.github.charleslzq.dicom
 
-import com.github.charleslzq.dicom.watch.FileChangeListenerSupport
+import com.github.charleslzq.dicom.watch.FileChangeListener
 import com.github.charleslzq.dicom.watch.FileWatcher
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
@@ -48,7 +48,7 @@ class FileWatchTest {
 
     class SimpleListener(
             private val fileWatcher: FileWatcher
-    ) : FileChangeListenerSupport() {
+    ) : FileChangeListener {
         var fileCreated = false
 
         override fun onCreate(basePath: Path, name: String) {

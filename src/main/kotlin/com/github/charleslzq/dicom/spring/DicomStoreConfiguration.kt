@@ -1,9 +1,7 @@
 package com.github.charleslzq.dicom.spring
 
-import com.github.charleslzq.dicom.store.DicomDataFileStore
-import com.github.charleslzq.dicom.store.DicomDataStore
-import com.github.charleslzq.dicom.store.DicomImageFileSaveHandler
-import com.github.charleslzq.dicom.store.LocalFileSaveHandler
+import com.github.charleslzq.dicom.store.*
+import com.google.common.collect.Lists
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -19,6 +17,9 @@ open class DicomStoreConfiguration {
     @Autowired
     private lateinit var dicomFileStoreProperties: DicomFileStoreProperties
 
+    @Autowired(required = false)
+    private var listenerList: MutableList<DicomDataListener> = Lists.newArrayList()
+
     @Bean
     @ConditionalOnMissingBean(DicomImageFileSaveHandler::class)
     open fun dicomImageFileSaveHandler(): DicomImageFileSaveHandler {
@@ -28,7 +29,7 @@ open class DicomStoreConfiguration {
     @Bean
     open fun dicomDataFileStore(dicomImageFileSaveHandler: DicomImageFileSaveHandler): DicomDataStore {
         Paths.get(dicomFileStoreProperties.dir).toFile().mkdirs()
-        return DicomDataFileStore(dicomFileStoreProperties.dir, dicomImageFileSaveHandler)
+        return DicomDataFileStore(dicomFileStoreProperties.dir, dicomImageFileSaveHandler, listenerList)
     }
 
 }
