@@ -1,116 +1,201 @@
 package com.github.charleslzq.dicom.store
 
 import com.github.charleslzq.dicom.data.*
-import com.google.common.collect.Lists
-import com.google.common.collect.Maps
 import com.google.gson.Gson
 import org.springframework.beans.factory.InitializingBean
 import java.io.File
 import java.io.FileWriter
-import java.net.URI
-import java.nio.file.Files
 import java.nio.file.Paths
-import java.nio.file.StandardCopyOption
+import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
-class DicomDataFileStore(val baseDir: String) : DicomDataStore, InitializingBean {
+class DicomDataFileStore(
+        private val baseDir: String,
+        private val saveHandler: DicomImageFileSaveHandler
+) : DicomDataStore, InitializingBean {
     private val metaFileName = "meta.json"
-    private val patients: MutableList<DicomPatient> = Lists.newArrayList()
+    private var dicomStore = DicomStore()
     private val gson = Gson()
     private var needLoad = AtomicBoolean(true)
 
-    override fun listPatient(): List<DicomPatient> {
-        synchronized(patients) {
-            return patients.toList()
-        }
+    override fun getStoreData(): DicomStore {
+        return dicomStore
     }
 
-    override fun findPatient(patientId: String): DicomPatient? {
-        synchronized(patients) {
-            return patients.find { it.metaInfo.id == patientId }
+    override fun getPatient(patientId: String): DicomPatient? {
+        return dicomStore.patients.find { it.metaInfo.id == patientId }
+    }
+
+    override fun getStudy(patientId: String, studyId: String): DicomStudy? {
+        return getPatient(patientId)?.studies?.find { it.metaInfo.instanceUID == studyId }
+    }
+
+    override fun getSeries(patientId: String, studyId: String, seriesId: String): DicomSeries? {
+        return getStudy(patientId, studyId)?.series?.find { it.metaInfo.instanceUID == seriesId }
+    }
+
+    override fun loadStoreMeta(): DicomStoreMetaInfo? {
+        return loadMetaFile(baseDir, DicomStoreMetaInfo::class.java)
+    }
+
+    override fun loadPatientMeta(patientId: String): DicomPatientMetaInfo? {
+        val patientDir = Paths.get(baseDir, patientId).toFile()
+        return loadMetaFile(patientDir.absolutePath, DicomPatientMetaInfo::class.java)
+    }
+
+    override fun loadStudyMeta(patientId: String, studyId: String): DicomStudyMetaInfo? {
+        val studyDir = Paths.get(baseDir, patientId, studyId).toFile()
+        return loadMetaFile(studyDir.absolutePath, DicomStudyMetaInfo::class.java)
+    }
+
+    override fun loadSeriesMeta(patientId: String, studyId: String, seriesId: String): DicomSeriesMetaInfo? {
+        val seriesDir = Paths.get(baseDir, patientId, studyId, seriesId).toFile()
+        return loadMetaFile(seriesDir.absolutePath, DicomSeriesMetaInfo::class.java)
+    }
+
+    override fun loadImageMeta(patientId: String, studyId: String, seriesId: String, imageNum: String): DicomImageMetaInfo? {
+        val imageDir = Paths.get(baseDir, patientId, studyId, seriesId, imageNum).toFile()
+        return loadMetaFile(imageDir.absolutePath, DicomImageMetaInfo::class.java)
+    }
+
+    override fun savePatient(patient: DicomPatient) {
+        val patientId = patient.metaInfo.id
+        val patientPathDir = Paths.get(baseDir, patientId)
+        val patientDir = patientPathDir.toFile()
+        if (!patientDir.exists()) {
+            patientDir.mkdirs()
         }
+        val oldMeta = loadPatientMeta(patientId!!)
+        val updateTime = LocalDateTime.now()
+        patient.studies.forEach { saveStudy(patientId, it) }
+        if (oldMeta != null) {
+            patient.metaInfo.updateTime.putAll(oldMeta.updateTime)
+        }
+        patient.metaInfo.updateTime.putAll(patient.studies.map { it.metaInfo.instanceUID!! to updateTime }.toMap())
+        updateMeta(patientDir, patient.metaInfo)
+        updateStoreMetaTime(patientId, updateTime)
+    }
+
+    override fun saveStudy(patientId: String, study: DicomStudy) {
+        val studyId = study.metaInfo.instanceUID
+        val studyDirPath = Paths.get(baseDir, patientId, studyId)
+        val studyDir = studyDirPath.toFile()
+        if (!studyDir.exists()) {
+            studyDir.mkdirs()
+        }
+        val oldMeta = loadStudyMeta(patientId, studyId!!)
+        val updateTime = LocalDateTime.now()
+        study.series.forEach { saveSeries(patientId, studyId, it) }
+        study.metaInfo.updateTime.clear()
+        if (oldMeta != null) {
+            study.metaInfo.updateTime.putAll(oldMeta.updateTime)
+        }
+        study.metaInfo.updateTime.putAll(study.series.map { it.metaInfo.instanceUID!! to updateTime }.toMap())
+        updateMeta(studyDir, study.metaInfo)
+        updatePatientMetaTime(patientId, studyId, updateTime)
+        updateStoreMetaTime(patientId, updateTime)
+    }
+
+    override fun saveSeries(patientId: String, studyId: String, series: DicomSeries) {
+        val seriesId = series.metaInfo.instanceUID
+        val seriesDirPath = Paths.get(baseDir, patientId, studyId, seriesId)
+        val seriesDir = seriesDirPath.toFile()
+        if (!seriesDir.exists()) {
+            seriesDir.mkdirs()
+        }
+        val oldMeta = loadSeriesMeta(patientId, studyId, seriesId!!)
+        val updateTime = LocalDateTime.now()
+        series.images.forEach { saveImage(patientId, studyId, seriesId, it) }
+        series.metaInfo.updateTime.clear()
+        if (oldMeta != null) {
+            series.metaInfo.updateTime.putAll(oldMeta.updateTime)
+        }
+        series.metaInfo.updateTime.putAll(series.images.map { it.instanceNumber!! to updateTime }.toMap())
+        updateMeta(seriesDir, series.metaInfo)
+        updateStudyMetaTime(patientId, studyId, seriesId, updateTime)
+        updatePatientMetaTime(patientId, studyId, updateTime)
+        updateStoreMetaTime(patientId, updateTime)
+    }
+
+    override fun saveImage(patientId: String, studyId: String, seriesId: String, dicomImageMetaInfo: DicomImageMetaInfo) {
+        val imageNum = dicomImageMetaInfo.instanceNumber
+        val imageDirPath = Paths.get(baseDir, patientId, studyId, seriesId, imageNum)
+        val imageDir = imageDirPath.toFile()
+        if (!imageDir.exists()) {
+            imageDir.mkdirs()
+        }
+        val oldMeta = loadImageMeta(patientId, studyId, seriesId, imageNum!!)
+        val updateTime = LocalDateTime.now()
+        val newImageMap = saveHandler.save(imageDirPath, dicomImageMetaInfo.files)
+        dicomImageMetaInfo.files.clear()
+        dicomImageMetaInfo.updateTime.clear()
+        if (oldMeta != null) {
+            dicomImageMetaInfo.files.putAll(oldMeta.files)
+            dicomImageMetaInfo.updateTime.putAll(oldMeta.updateTime)
+        }
+        dicomImageMetaInfo.files.putAll(newImageMap)
+        dicomImageMetaInfo.updateTime.putAll(newImageMap.map { it.key to updateTime }.toMap())
+        updateMeta(imageDir, dicomImageMetaInfo)
+        updateSeriesMetaTime(patientId, studyId, seriesId, imageNum, updateTime)
+        updateStudyMetaTime(patientId, studyId, seriesId, updateTime)
+        updatePatientMetaTime(patientId, studyId, updateTime)
+        updateStoreMetaTime(patientId, updateTime)
     }
 
     override fun saveDicomData(dicomData: DicomData) {
-        val patientId = dicomData.patientMetaInfo.id
-        val studyUID = dicomData.studyMetaInfo.instanceUID
-        val seriesUID = dicomData.seriesMetaInfo.instanceUID
-        val imageNum = dicomData.imageMetaInfo.instanceNumber
-        val patientDir = Paths.get(baseDir, patientId).toFile()
-        val studyDir = Paths.get(patientDir.absolutePath, studyUID).toFile()
-        val seriesDir = Paths.get(studyDir.absolutePath, seriesUID).toFile()
-        val imageDir = Paths.get(seriesDir.absolutePath, imageNum).toFile()
-        updateMeta(patientDir, dicomData.patientMetaInfo)
-        updateMeta(studyDir, dicomData.studyMetaInfo)
-        updateMeta(seriesDir, dicomData.seriesMetaInfo)
+        val patient = DicomPatient(dicomData.patientMetaInfo)
+        val study = DicomStudy(dicomData.studyMetaInfo)
+        val series = DicomSeries(dicomData.seriesMetaInfo)
+        series.images.add(dicomData.imageMetaInfo)
+        study.series.add(series)
+        patient.studies.add(study)
+        savePatient(patient)
 
-        val newImages: MutableMap<String, URI> = Maps.newHashMap()
-        if (!imageDir.exists() || imageDir.isFile) {
-            imageDir.mkdir()
-        } else {
-            val oldImageMeta = loadMetaFile(imageDir.absolutePath, DicomImageMetaInfo::class.java)
-            newImages.putAll(oldImageMeta.files)
-        }
-        newImages.putAll(dicomData.imageMetaInfo.files.map {
-            it.key to copyFile(it.value, imageDir.absolutePath)
-        }.toMap())
-        dicomData.imageMetaInfo.files.clear()
-        dicomData.imageMetaInfo.files.putAll(newImages)
-        updateMeta(imageDir, dicomData.imageMetaInfo)
         needLoad.set(true)
     }
 
-    private fun copyFile(uri: URI, newDir: String): URI {
-        val rawPath = Paths.get(uri)
-        val fileName = rawPath.toFile().name
-        val filePath = Paths.get(newDir, fileName)
-        Files.copy(rawPath, filePath, StandardCopyOption.REPLACE_EXISTING)
-        return filePath.toUri()
-    }
-
-    override fun loadMetaFile() {
+    override fun reload() {
         if (needLoad.get()) {
-            synchronized(patients) {
-                patients.clear()
-                val storeDir = File(baseDir)
-                if (storeDir.exists() && storeDir.isDirectory) {
-                    val patientsFromFile = storeDir.list(this::metaFileExists).map { patientDir ->
-                        val patientPath = Paths.get(baseDir, patientDir)
-                        val patientMeta = loadMetaFile(patientPath.toFile().absolutePath, DicomPatientMetaInfo::class.java)
-                        val studies = patientPath.toFile().list(this::metaFileExists).map { studyDir ->
-                            val studyPath = Paths.get(baseDir, patientDir, studyDir)
-                            val studyMeta = loadMetaFile(studyPath.toFile().absolutePath, DicomStudyMetaInfo::class.java)
-                            val series = studyPath.toFile().list(this::metaFileExists).map { seriesDir ->
-                                val seriesPath = Paths.get(baseDir, patientDir, studyDir, seriesDir)
-                                val seriesMeta = loadMetaFile(seriesPath.toFile().absolutePath, DicomSeriesMetaInfo::class.java)
-                                val images = seriesPath.toFile().list(this::metaFileExists).map { imageDir ->
-                                    val imagePath = Paths.get(seriesPath.toFile().absolutePath, imageDir)
-                                    loadMetaFile(imagePath.toFile().absolutePath, DicomImageMetaInfo::class.java)
-                                }.toList()
-                                val dicomSeries = DicomSeries(seriesMeta)
-                                dicomSeries.images.addAll(images)
-                                dicomSeries
-                            }.toList()
-                            val dicomStudy = DicomStudy(studyMeta)
-                            dicomStudy.series.addAll(series)
-                            dicomStudy
-                        }.toList()
-                        val dicomPatient = DicomPatient(patientMeta)
-                        dicomPatient.studies.addAll(studies)
-                        dicomPatient
-                    }.toList()
-                    patients.addAll(patientsFromFile)
-                } else {
-                    storeDir.mkdirs()
+            val storeMeta = loadStoreMeta()
+            if (storeMeta != null) {
+                val patientList = storeMeta.updateTime.keys.map { patientId ->
+                    val patientMeta = loadPatientMeta(patientId)
+                    if (patientMeta != null) {
+                        val studyList = patientMeta.updateTime.keys.map { studyId ->
+                            val studyMeta = loadStudyMeta(patientId, studyId)
+                            if (studyMeta != null) {
+                                val seriesList = studyMeta.updateTime.keys.map { seriesId ->
+                                    val seriesMeta = loadSeriesMeta(patientId, studyId, seriesId)
+                                    if (seriesMeta != null) {
+                                        val images = seriesMeta.updateTime.keys.map { imageNum ->
+                                            loadImageMeta(patientId, studyId, seriesId, imageNum)
+                                        }.filterNotNull().toMutableList()
+                                        DicomSeries(seriesMeta, images)
+                                    } else {
+                                        null
+                                    }
+                                }.filterNotNull().toMutableList()
+                                DicomStudy(studyMeta, seriesList)
+                            } else {
+                                null
+                            }
+                        }.filterNotNull().toMutableList()
+                        DicomPatient(patientMeta, studyList)
+                    } else {
+                        null
+                    }
+                }.filterNotNull().toMutableList()
+                synchronized(dicomStore) {
+                    dicomStore = DicomStore(storeMeta, patientList)
+                    needLoad.compareAndSet(true, false)
                 }
             }
-            needLoad.compareAndSet(true, false)
         }
     }
 
     override fun afterPropertiesSet() {
-        loadMetaFile()
+        reload()
     }
 
     private fun metaFileExists(dir: File, name: String): Boolean {
@@ -118,10 +203,15 @@ class DicomDataFileStore(val baseDir: String) : DicomDataStore, InitializingBean
         return subDir.exists() && subDir.isDirectory && subDir.list({ _, nm -> metaFileName == nm }).isNotEmpty()
     }
 
-    private fun <T> loadMetaFile(dirName: String, clazz: Class<T>): T {
-        Scanner(Paths.get(dirName, metaFileName).toFile()).useDelimiter("\n").use {
-            val content = it.next()
-            return gson.fromJson(content, clazz)
+    private fun <T> loadMetaFile(dirName: String, clazz: Class<T>): T? {
+        val metaFile = Paths.get(dirName, metaFileName).toFile()
+        if (metaFile.exists() && metaFile.isFile) {
+            Scanner(metaFile).useDelimiter("\n").use {
+                val content = it.next()
+                return gson.fromJson(content, clazz)
+            }
+        } else {
+            return null
         }
     }
 
@@ -137,6 +227,45 @@ class DicomDataFileStore(val baseDir: String) : DicomDataStore, InitializingBean
         FileWriter(metaFilePath.toFile()).use {
             it.write(content)
         }
+    }
 
+    private fun updateStoreMetaTime(patientId: String, updateTime: LocalDateTime) {
+        val storeMeta = loadStoreMeta()
+        if (storeMeta != null) {
+            val storeDir = Paths.get(baseDir).toFile()
+            storeMeta.updateTime[patientId] = updateTime
+            updateMeta(storeDir, storeMeta)
+        } else {
+            val newMeta = DicomStoreMetaInfo()
+            newMeta.updateTime[patientId] = updateTime
+            updateMeta(Paths.get(baseDir).toFile(), newMeta)
+        }
+    }
+
+    private fun updatePatientMetaTime(patientId: String, studyId: String, updateTime: LocalDateTime) {
+        val patientMeta = loadPatientMeta(patientId)
+        if (patientMeta != null) {
+            val patientDir = Paths.get(baseDir, patientId).toFile()
+            patientMeta.updateTime[studyId] = updateTime
+            updateMeta(patientDir, patientMeta)
+        }
+    }
+
+    private fun updateStudyMetaTime(patientId: String, studyId: String, seriesId: String, updateTime: LocalDateTime) {
+        val studyMeta = loadStudyMeta(patientId, studyId)
+        if (studyMeta != null) {
+            val studyDir = Paths.get(baseDir, patientId, studyId).toFile()
+            studyMeta.updateTime[seriesId] = updateTime
+            updateMeta(studyDir, studyMeta)
+        }
+    }
+
+    private fun updateSeriesMetaTime(patientId: String, studyId: String, seriesId: String, imageNum: String, updateTime: LocalDateTime) {
+        val seriesMeta = loadSeriesMeta(patientId, studyId, seriesId)
+        if (seriesMeta != null) {
+            val seriesDir = Paths.get(baseDir, patientId, studyId, seriesId).toFile()
+            seriesMeta.updateTime[imageNum] = updateTime
+            updateMeta(seriesDir, seriesMeta)
+        }
     }
 }

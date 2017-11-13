@@ -1,5 +1,8 @@
 package com.github.charleslzq.dicom.data
 
+import com.google.common.collect.Maps
+import java.time.LocalDateTime
+
 data class DicomPatientMetaInfo(
         var id: String? = null,
         var name: String? = null,
@@ -10,5 +13,6 @@ data class DicomPatientMetaInfo(
         var weight: Float? = null,
         var idIssuer: String? = null,
         var position: String? = null,
-        var pregnancyStatus: Int? = null
+        var pregnancyStatus: Int? = null,
+        val updateTime: MutableMap<String, LocalDateTime> = Maps.newHashMap()
 )

@@ -37,13 +37,13 @@ class DicomParseWorker(
                 stopWatch.start(dcmFile.absolutePath)
                 val dicomData = dicomDataReader.parse(dcmFile, imageTmpDir)
                 dicomDataStore.saveDicomData(dicomData)
-                dicomDataStore.loadMetaFile()
+                dicomDataStore.reload()
                 stopWatch.stop()
                 taskList.add(stopWatch.lastTaskInfo)
                 log.info("End parsing {} with {} milli-seconds", path, stopWatch.lastTaskTimeMillis)
                 logSummary()
-            } catch(throwable: Throwable) {
-                log.error("Error occur, skip parsing current file",  throwable)
+            } catch (throwable: Throwable) {
+                log.error("Error occur, skip parsing current file", throwable)
             }
         }
     }

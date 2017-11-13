@@ -1,5 +1,8 @@
 package com.github.charleslzq.dicom.data
 
+import com.google.common.collect.Maps
+import java.time.LocalDateTime
+
 data class DicomSeriesMetaInfo(
         var number: Int? = null,
         var instanceUID: String? = null,
@@ -11,5 +14,6 @@ data class DicomSeriesMetaInfo(
         var imageOrientation: Float? = null,
         var sliceThickness: Float? = null,
         var spacingBetweenSlices: Float? = null,
-        var sliceLocation: Float? = null
+        var sliceLocation: Float? = null,
+        val updateTime: MutableMap<String, LocalDateTime> = Maps.newHashMap()
 )

@@ -2,6 +2,7 @@ package com.github.charleslzq.dicom.data
 
 import com.google.common.collect.Maps
 import java.net.URI
+import java.time.LocalDateTime
 
 data class DicomImageMetaInfo(
         var name: String? = null,
@@ -24,5 +25,6 @@ data class DicomImageMetaInfo(
         var rescaleIntercept: Float? = null,
         var rescaleSlope: Float? = null,
         var rescaleType: String? = null,
-        val files: MutableMap<String, URI> = Maps.newHashMap()
+        val files: MutableMap<String, URI> = Maps.newHashMap(),
+        val updateTime: MutableMap<String, LocalDateTime> = Maps.newHashMap()
 )

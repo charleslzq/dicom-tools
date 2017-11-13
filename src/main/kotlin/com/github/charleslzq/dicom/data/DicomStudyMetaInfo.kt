@@ -1,5 +1,8 @@
 package com.github.charleslzq.dicom.data
 
+import com.google.common.collect.Maps
+import java.time.LocalDateTime
+
 data class DicomStudyMetaInfo(
         var id: String? = null,
         var accessionNumber: String? = null,
@@ -9,5 +12,6 @@ data class DicomStudyMetaInfo(
         var patientAge: Int? = null,
         var date: String? = null,
         var time: String? = null,
-        var description: String? = null
+        var description: String? = null,
+        val updateTime: MutableMap<String, LocalDateTime> = Maps.newHashMap()
 )
