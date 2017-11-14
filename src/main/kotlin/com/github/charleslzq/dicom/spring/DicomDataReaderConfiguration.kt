@@ -15,11 +15,14 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor
 import java.nio.file.Paths
 
 @Configuration
-@EnableConfigurationProperties(DicomImageProperties::class)
+@EnableConfigurationProperties(DicomImageProperties::class, DicomParseProperties::class)
 open class DicomDataReaderConfiguration {
 
     @Autowired
     private lateinit var dicomImageProperties: DicomImageProperties
+
+    @Autowired
+    private lateinit var dicomParseProperties: DicomParseProperties
 
     @Bean
     open fun dicomDataReader(): DicomDataReader {
@@ -51,7 +54,9 @@ open class DicomDataReaderConfiguration {
                 dicomDataReader,
                 dicomDataStore,
                 dicomParseWorkerExecutor,
-                dicomImageProperties.imgTmpDir
+                dicomImageProperties.imgTmpDir,
+                dicomParseProperties.formats,
+                dicomParseProperties.retry
         )
     }
 }
