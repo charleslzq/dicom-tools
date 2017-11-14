@@ -207,7 +207,9 @@ class DicomDataFileStore(
                 }.filterNotNull().toMutableList()
                 val newStore = DicomStore(storeMeta, patientList)
                 synchronized(dicomStore) {
-                    detectChanges(newStore)
+                    if (listeners.isNotEmpty()) {
+                        detectChanges(newStore)
+                    }
                     dicomStore = newStore
                     needLoad.compareAndSet(true, false)
                 }
