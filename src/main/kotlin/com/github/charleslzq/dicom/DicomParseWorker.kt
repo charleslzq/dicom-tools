@@ -60,7 +60,10 @@ class DicomParseWorker(
                         failedFiles.put(dcmFile, failed + 1)
                         queue.put(dcmFile)
                     }
-                    else -> log.error("Retry limit reached, give up parsing $path", throwable)
+                    else -> {
+                        log.error("Retry limit reached, give up parsing $path", throwable)
+                        failedFiles.remove(dcmFile)
+                    }
                 }
             }
         }
