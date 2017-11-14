@@ -29,19 +29,19 @@ class DicomParseWorker(
     fun parse(dcmFile: File) {
         if (dcmFile.exists() && dcmFile.isFile && acceptFormats.contains(dcmFile.extension)) {
             queue.put(dcmFile)
-            log.info("Task for {} submitted", dcmFile.absolutePath)
+            log.info("Task for ${dcmFile.absolutePath} submitted")
         }
     }
 
     private fun work() {
         while (!pause) {
             val dcmFile = queue.take()
+            val path = dcmFile.absolutePath
             val failed = failedFiles.getOrDefault(dcmFile, 0)
             try {
-                val path = dcmFile.absolutePath
                 when (failed) {
-                    0 -> log.info("Start to parse {}", path)
-                    else -> log.info("Retry parsing {} with {} failed attempt(s)", path, failed)
+                    0 -> log.info("Start to parse $path", path)
+                    else -> log.info("Retry parsing $path with $failed failed attempt(s)")
                 }
                 val stopWatch = StopWatch()
                 stopWatch.start(dcmFile.absolutePath)
@@ -50,17 +50,17 @@ class DicomParseWorker(
                 dicomDataStore.reload()
                 stopWatch.stop()
                 taskList.add(stopWatch.lastTaskInfo)
-                log.info("End parsing {} with {} milli-seconds, {} fail(s)", path, stopWatch.lastTaskTimeMillis, failed)
+                log.info("End parsing $path with ${stopWatch.lastTaskTimeMillis} milli-seconds, $failed fail(s)")
                 logSummary()
                 failedFiles.remove(dcmFile)
             } catch (throwable: Throwable) {
                 when (failed) {
                     in 0..retry -> {
-                        log.error("Error occur, skip parsing current file and retry later", throwable)
+                        log.error("Error occur, skip parsing $path and retry later", throwable)
                         failedFiles.put(dcmFile, failed + 1)
                         queue.put(dcmFile)
                     }
-                    else -> log.error("Retry limit reached, giving up", throwable)
+                    else -> log.error("Retry limit reached, give up parsing $path", throwable)
                 }
             }
         }
@@ -74,8 +74,7 @@ class DicomParseWorker(
     private fun logSummary() {
         if (taskList.isNotEmpty()) {
             val totalTime = taskList.map { it.timeSeconds }.sum()
-            log.info("Complete {} task(s), using {} second(s), average {} second(s) per task",
-                    taskList.size, totalTime, totalTime / taskList.size)
+            log.info("Complete ${taskList.size} task(s), using $totalTime second(s), average ${totalTime / taskList.size} second(s) per task")
         }
     }
 }

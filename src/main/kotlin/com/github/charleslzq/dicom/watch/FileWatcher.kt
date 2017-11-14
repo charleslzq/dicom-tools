@@ -26,12 +26,12 @@ class FileWatcher(private val taskExecutor: AsyncTaskExecutor, private var autoS
             if (events.isNotEmpty()) {
                 val key = pathToMonitor.register(watchService, events)
                 watchDirs.put(key, Pair(dir.toPath(), listener))
-                log.info("Start to monitor directory {}", dir.absolutePath)
+                log.info("Start to monitor directory ${dir.absolutePath}")
             } else {
-                log.warn("No evnet configured for {}, will not register", dir.absolutePath)
+                log.warn("No evnet configured for ${dir.absolutePath}, will not register")
             }
         } else {
-            log.warn("Target not exist or not directory: {}", dir.absolutePath)
+            log.warn("Target not exist or not directory: ${dir.absolutePath}")
         }
     }
 
