@@ -26,7 +26,7 @@ open class DicomStoreConfiguration {
         return LocalFileSaveHandler()
     }
 
-    @Bean
+    @Bean(initMethod = "reload")
     open fun dicomDataFileStore(dicomImageFileSaveHandler: DicomImageFileSaveHandler): DicomDataStore {
         Paths.get(dicomFileStoreProperties.dir).toFile().mkdirs()
         return DicomDataFileStore(dicomFileStoreProperties.dir, dicomImageFileSaveHandler, listenerList)

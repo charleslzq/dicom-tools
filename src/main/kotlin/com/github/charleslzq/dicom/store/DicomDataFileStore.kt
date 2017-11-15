@@ -5,7 +5,6 @@ import com.google.common.collect.Lists
 import com.google.common.collect.MapDifference
 import com.google.common.collect.Maps
 import com.google.gson.Gson
-import org.springframework.beans.factory.InitializingBean
 import java.io.File
 import java.io.FileWriter
 import java.nio.file.Paths
@@ -215,10 +214,6 @@ class DicomDataFileStore(
                 }
             }
         }
-    }
-
-    override fun afterPropertiesSet() {
-        reload()
     }
 
     private fun metaFileExists(dir: File, name: String): Boolean {
