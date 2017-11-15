@@ -19,6 +19,10 @@ class DicomDataFileStore(
     private val gson = Gson()
     private var needLoad = AtomicBoolean(true)
 
+    init {
+        File(baseDir).mkdirs()
+    }
+
     override fun getStoreData(): DicomStore {
         synchronized(dicomStore) {
             return dicomStore
