@@ -16,7 +16,7 @@ class DicomDataFileStore(
         private val baseDir: String,
         private val saveHandler: DicomImageFileSaveHandler,
         val listeners: MutableList<DicomDataListener> = Lists.newArrayList()
-) : DicomDataStore, InitializingBean {
+) : DicomDataStore {
     private val metaFileName = "meta.json"
     private var dicomStore = DicomStore()
     private val gson = Gson()
