@@ -1,13 +1,12 @@
 package com.github.charleslzq.dicom.reader
 
 import com.github.charleslzq.dicom.data.DicomTagInfo
-import com.google.common.collect.Lists
 import org.dcm4che3.data.*
 import org.dcm4che3.io.DicomInputStream
 import org.dcm4che3.util.TagUtils
 
 class DicomTagInfoReader : DicomInputParser<List<DicomTagInfo>> {
-    private val tagList: MutableList<DicomTagInfo> = Lists.newArrayList()
+    private val tagList: MutableList<DicomTagInfo> = emptyList<DicomTagInfo>().toMutableList()
     private lateinit var bulkDataUri: String
 
     override fun get(): List<DicomTagInfo> {

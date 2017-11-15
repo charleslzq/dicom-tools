@@ -2,8 +2,6 @@ package com.github.charleslzq.dicom
 
 import com.github.charleslzq.dicom.reader.DicomDataReader
 import com.github.charleslzq.dicom.store.DicomDataStore
-import com.google.common.collect.Lists
-import com.google.common.collect.Maps
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.core.task.AsyncTaskExecutor
@@ -23,8 +21,8 @@ class DicomParseWorker(
     private val log = LoggerFactory.getLogger(this::class.java)
     private val queue: BlockingQueue<File> = LinkedBlockingQueue()
     private var pause = true
-    private val taskList: MutableList<StopWatch.TaskInfo> = Lists.newArrayList()
-    private val failedFiles: MutableMap<File, Int> = Maps.newConcurrentMap()
+    private val taskList: MutableList<StopWatch.TaskInfo> = emptyList<StopWatch.TaskInfo>().toMutableList()
+    private val failedFiles: MutableMap<File, Int> = emptyMap<File, Int>().toMutableMap()
 
     fun parse(dcmFile: File) {
         if (dcmFile.exists() && dcmFile.isFile && acceptFormats.contains(dcmFile.extension)) {

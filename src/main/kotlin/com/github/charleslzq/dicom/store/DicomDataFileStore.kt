@@ -1,9 +1,6 @@
 package com.github.charleslzq.dicom.store
 
 import com.github.charleslzq.dicom.data.*
-import com.google.common.collect.Lists
-import com.google.common.collect.MapDifference
-import com.google.common.collect.Maps
 import com.google.gson.Gson
 import java.io.File
 import java.io.FileWriter
@@ -15,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class DicomDataFileStore(
         private val baseDir: String,
         private val saveHandler: DicomImageFileSaveHandler,
-        val listeners: MutableList<DicomDataListener> = Lists.newArrayList()
+        val listeners: MutableList<DicomDataListener> = emptyList<DicomDataListener>().toMutableList()
 ) : DicomDataStore {
     private val metaFileName = "meta.json"
     private var dicomStore = DicomStore()
@@ -334,11 +331,10 @@ class DicomDataFileStore(
         }
     }
 
-    private fun <S, T> compare(oldMap: MutableMap<S, T>, newMap: MutableMap<S, T>): Triple<Map<S, T>, Map<S, MapDifference.ValueDifference<T>>, Map<S, T>> {
-        val mapDifference = Maps.difference(oldMap, newMap)
-        val entriesToCreate = mapDifference.entriesOnlyOnRight()
-        val entriesToUpdate = mapDifference.entriesDiffering()
-        val entriesToDelete = mapDifference.entriesOnlyOnLeft()
+    private fun <S, T> compare(oldMap: MutableMap<S, T>, newMap: MutableMap<S, T>): Triple<Map<S, T>, Map<S, Pair<T, T>>, Map<S, T>> {
+        val entriesToCreate = newMap.minus(oldMap.keys)
+        val entriesToDelete = oldMap.minus(newMap.keys)
+        val entriesToUpdate = newMap.filter { oldMap.containsKey(it.key) }.map { it.key to Pair(oldMap[it.key]!!, it.value) }.toMap()
         return Triple(entriesToCreate, entriesToUpdate, entriesToDelete)
     }
 }

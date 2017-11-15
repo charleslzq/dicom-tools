@@ -1,6 +1,5 @@
 package com.github.charleslzq.dicom.data
 
-import com.google.common.collect.Maps
 import java.time.LocalDateTime
 
 data class DicomStudyMetaInfo(
@@ -13,5 +12,5 @@ data class DicomStudyMetaInfo(
         var date: String? = null,
         var time: String? = null,
         var description: String? = null,
-        val updateTime: MutableMap<String, LocalDateTime> = Maps.newHashMap()
+        val updateTime: MutableMap<String, LocalDateTime> = emptyMap<String, LocalDateTime>().toMutableMap()
 )

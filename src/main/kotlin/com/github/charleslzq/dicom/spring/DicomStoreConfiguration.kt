@@ -1,7 +1,6 @@
 package com.github.charleslzq.dicom.spring
 
 import com.github.charleslzq.dicom.store.*
-import com.google.common.collect.Lists
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -18,7 +17,7 @@ open class DicomStoreConfiguration {
     private lateinit var dicomFileStoreProperties: DicomFileStoreProperties
 
     @Autowired(required = false)
-    private var listenerList: MutableList<DicomDataListener> = Lists.newArrayList()
+    private var listenerList: MutableList<DicomDataListener> = emptyList<DicomDataListener>().toMutableList()
 
     @Bean
     @ConditionalOnMissingBean(DicomImageFileSaveHandler::class)

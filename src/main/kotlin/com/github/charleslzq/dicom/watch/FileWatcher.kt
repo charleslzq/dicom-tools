@@ -1,6 +1,5 @@
 package com.github.charleslzq.dicom.watch
 
-import com.google.common.collect.Maps
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.context.SmartLifecycle
@@ -12,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class FileWatcher(private val taskExecutor: AsyncTaskExecutor, private var autoStart: Boolean) : SmartLifecycle, InitializingBean {
     private val log = LoggerFactory.getLogger(this::class.java)
     private val watchService = FileSystems.getDefault().newWatchService()
-    private val watchDirs: MutableMap<WatchKey, Pair<Path, FileChangeListener>> = Maps.newConcurrentMap()
+    private val watchDirs: MutableMap<WatchKey, Pair<Path, FileChangeListener>> = emptyMap<WatchKey, Pair<Path, FileChangeListener>>().toMutableMap()
     private var pause: AtomicBoolean = AtomicBoolean(true)
 
     fun register(path: String, listener: FileChangeListener, vararg events: WatchEvent.Kind<Path>) {

@@ -9,7 +9,6 @@ import com.github.charleslzq.dicom.reader.DicomImageReader
 import com.github.charleslzq.dicom.store.DicomDataFileStore
 import com.github.charleslzq.dicom.store.DicomDataListener
 import com.github.charleslzq.dicom.store.LocalFileSaveHandler
-import com.google.common.collect.Lists
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Test
@@ -28,10 +27,10 @@ class DicomDataFileStoreTest {
             dir.deleteRecursively()
         }
         dir.mkdir()
-        val dataStore = DicomDataFileStore(dirBase, LocalFileSaveHandler(), Lists.newArrayList(SimpleStoreListener()))
+        val dataStore = DicomDataFileStore(dirBase, LocalFileSaveHandler(), listOf(SimpleStoreListener()).toMutableList())
         val dicomFile = TestUtil.readFile(path)
         val dicomImageReader = DicomImageReader("PNG", "png")
-        val dicomDataReader = DicomDataReader(Lists.newArrayList(dicomImageReader))
+        val dicomDataReader = DicomDataReader(listOf(dicomImageReader))
         val dicomData = dicomDataReader.parse(dicomFile, dirBase)
         dataStore.saveDicomData(dicomData)
         dataStore.reload()
@@ -55,7 +54,7 @@ class DicomDataFileStoreTest {
         assertThat("有两个文件", patients[0].studies[0].series[0].images[0].files.size, `is`(2))
     }
 
-    class SimpleStoreListener: DicomDataListener {
+    class SimpleStoreListener : DicomDataListener {
         override fun onPatientCreate(dicomPatient: DicomPatient) {
             println(dicomPatient.toString())
         }
