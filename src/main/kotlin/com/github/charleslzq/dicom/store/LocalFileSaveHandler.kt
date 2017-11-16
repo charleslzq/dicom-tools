@@ -8,8 +8,8 @@ import java.nio.file.StandardCopyOption
 
 class LocalFileSaveHandler : DicomImageFileSaveHandler {
 
-    override fun save(path: Path, imageMap: Map<String, URI>): Map<String, URI> {
-        return imageMap.map { it.key to copyFile(it.value, path.toFile().absolutePath) }.toMap()
+    override fun save(path: String, imageMap: Map<String, URI>): Map<String, URI> {
+        return imageMap.map { it.key to copyFile(it.value, path) }.toMap()
     }
 
     private fun copyFile(uri: URI, newDir: String): URI {

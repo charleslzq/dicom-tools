@@ -152,7 +152,7 @@ class DicomDataFileStore(
         }
         val oldMeta = loadImageMeta(patientId, studyId, seriesId, imageNum!!)
         val updateTime = LocalDateTime.now()
-        val newImageMap = saveHandler.save(imageDirPath, dicomImageMetaInfo.files)
+        val newImageMap = saveHandler.save(imageDirPath.toFile().absolutePath, dicomImageMetaInfo.files)
         dicomImageMetaInfo.files.clear()
         dicomImageMetaInfo.updateTime.clear()
         if (oldMeta != null) {
@@ -225,11 +225,54 @@ class DicomDataFileStore(
         }
     }
 
-    override fun clearData() {
-        val base = File(baseDir)
-        if (base.exists()) {
-            base.deleteRecursively()
+    override fun clearPatient(patientId: String) {
+        Paths.get(baseDir, patientId).toFile().deleteRecursively()
+        val storeMeta = loadStoreMeta()
+        if (storeMeta != null) {
+            storeMeta.updateTime.remove(patientId)
+            updateMeta(File(baseDir), storeMeta)
         }
+
+        needLoad.set(true)
+    }
+
+    override fun clearStudy(patientId: String, studyId: String) {
+        Paths.get(baseDir, patientId, studyId).toFile().deleteRecursively()
+        val patientMeta = loadPatientMeta(patientId)
+        if (patientMeta != null) {
+            patientMeta.updateTime.remove(studyId)
+            updateMeta(Paths.get(baseDir, patientId).toFile(), patientMeta)
+        }
+
+        needLoad.set(true)
+    }
+
+    override fun clearSeries(patientId: String, studyId: String, seriesId: String) {
+        Paths.get(patientId, studyId, seriesId).toFile().deleteRecursively()
+        val studyMeta = loadStudyMeta(patientId, studyId)
+        if (studyMeta != null) {
+            studyMeta.updateTime.remove(seriesId)
+            updateMeta(Paths.get(baseDir, patientId, studyId).toFile(), studyMeta)
+        }
+
+        needLoad.set(true)
+    }
+
+    override fun clearImage(patientId: String, studyId: String, seriesId: String, imageNum: String) {
+        Paths.get(patientId, studyId, seriesId, imageNum).toFile().deleteRecursively()
+        val seriesMeta = loadSeriesMeta(patientId, studyId, seriesId)
+        if (seriesMeta != null) {
+            seriesMeta.updateTime.remove(imageNum)
+            updateMeta(Paths.get(baseDir, patientId, studyId, seriesId).toFile(), seriesMeta)
+        }
+
+        needLoad.set(true)
+    }
+
+    override fun clearData() {
+        File(baseDir).deleteRecursively()
+
+        needLoad.set(true)
     }
 
     private fun metaFileExists(dir: File, name: String): Boolean {
