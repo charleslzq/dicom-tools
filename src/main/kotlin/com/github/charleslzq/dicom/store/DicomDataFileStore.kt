@@ -87,6 +87,7 @@ class DicomDataFileStore(
         val oldMeta = loadPatientMeta(patientId!!)
         val updateTime = LocalDateTime.now()
         patient.studies.forEach { saveStudy(patientId, it) }
+        patient.metaInfo.updateTime.clear()
         if (oldMeta != null) {
             patient.metaInfo.updateTime.putAll(oldMeta.updateTime)
         }
