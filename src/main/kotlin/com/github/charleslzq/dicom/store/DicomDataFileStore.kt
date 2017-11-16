@@ -4,10 +4,13 @@ import com.github.charleslzq.dicom.data.*
 import com.google.gson.Gson
 import java.io.File
 import java.io.FileWriter
-import java.nio.file.Paths
-import java.time.LocalDateTime
+import org.joda.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
+import com.google.gson.GsonBuilder
+import com.fatboyindustrial.gsonjodatime.Converters
+
+
 
 class DicomDataFileStore(
         private val baseDir: String,
@@ -16,7 +19,7 @@ class DicomDataFileStore(
 ) : DicomDataStore {
     private val metaFileName = "meta.json"
     private var dicomStore = DicomStore()
-    private val gson = Gson()
+    private val gson = Converters.registerLocalDateTime(GsonBuilder()).create()
     private var needLoad = AtomicBoolean(true)
 
     init {

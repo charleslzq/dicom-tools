@@ -1,7 +1,7 @@
 package com.github.charleslzq.dicom.data
 
 import java.net.URI
-import java.time.LocalDateTime
+import org.joda.time.LocalDateTime
 
 data class DicomImageMetaInfo(
         var name: String? = null,
