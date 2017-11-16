@@ -95,6 +95,7 @@ class DicomDataFileStore(
         updateMeta(patientDir, patient.metaInfo)
         updateStoreMetaTime(patientId, updateTime)
 
+        needLoad.set(true)
     }
 
     override fun saveStudy(patientId: String, study: DicomStudy) {
@@ -115,6 +116,8 @@ class DicomDataFileStore(
         updateMeta(studyDir, study.metaInfo)
         updatePatientMetaTime(patientId, studyId, updateTime)
         updateStoreMetaTime(patientId, updateTime)
+
+        needLoad.set(true)
     }
 
     override fun saveSeries(patientId: String, studyId: String, series: DicomSeries) {
@@ -136,6 +139,8 @@ class DicomDataFileStore(
         updateStudyMetaTime(patientId, studyId, seriesId, updateTime)
         updatePatientMetaTime(patientId, studyId, updateTime)
         updateStoreMetaTime(patientId, updateTime)
+
+        needLoad.set(true)
     }
 
     override fun saveImage(patientId: String, studyId: String, seriesId: String, dicomImageMetaInfo: DicomImageMetaInfo) {
@@ -161,6 +166,8 @@ class DicomDataFileStore(
         updateStudyMetaTime(patientId, studyId, seriesId, updateTime)
         updatePatientMetaTime(patientId, studyId, updateTime)
         updateStoreMetaTime(patientId, updateTime)
+
+        needLoad.set(true)
     }
 
     override fun saveDicomData(dicomData: DicomData) {
