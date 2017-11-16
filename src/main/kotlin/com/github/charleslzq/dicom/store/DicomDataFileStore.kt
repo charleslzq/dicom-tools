@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class DicomDataFileStore(
         private val baseDir: String,
         private val saveHandler: DicomImageFileSaveHandler,
-        val listeners: MutableList<DicomDataListener> = emptyList<DicomDataListener>().toMutableList()
+        private val listeners: MutableList<DicomDataListener> = emptyList<DicomDataListener>().toMutableList()
 ) : DicomDataStore {
     private val metaFileName = "meta.json"
     private var dicomStore = DicomStore()
@@ -214,6 +214,13 @@ class DicomDataFileStore(
                     needLoad.compareAndSet(true, false)
                 }
             }
+        }
+    }
+
+    override fun clearData() {
+        val base = File(baseDir)
+        if (base.exists()) {
+            base.deleteRecursively()
         }
     }
 

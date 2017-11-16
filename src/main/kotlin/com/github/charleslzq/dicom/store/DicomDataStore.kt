@@ -18,4 +18,5 @@ interface DicomDataStore {
     fun saveImage(patientId: String, studyId: String, seriesId: String, dicomImageMetaInfo: DicomImageMetaInfo)
     fun saveDicomData(dicomData: DicomData)
     fun reload()
+    fun clearData()
 }
