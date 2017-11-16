@@ -67,12 +67,6 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <version>${spring.boot.verion}</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <artifactId>slf4j-api</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.dcm4che.tool</groupId>
@@ -287,13 +281,6 @@
             </build>
         </profile>
     </profiles>
-
-    <repositories>
-        <repository>
-            <id>local</id>
-            <url>file://${project.basedir}/repo</url>
-        </repository>
-    </repositories>
 
     <pluginRepositories>
         <pluginRepository>
