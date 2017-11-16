@@ -10,7 +10,7 @@ import org.springframework.core.task.AsyncTaskExecutor
 class AsyncDicomDataListener(
         private val asyncTaskExecutor: AsyncTaskExecutor,
         private val listener: DicomDataListener
-): DicomDataListener {
+) : DicomDataListener {
 
     override fun onPatientCreate(dicomPatient: DicomPatient) {
         asyncTaskExecutor.submit {

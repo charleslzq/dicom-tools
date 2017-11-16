@@ -56,7 +56,8 @@ open class DicomDataReaderConfiguration {
                 dicomParseWorkerExecutor,
                 dicomImageProperties.imgTmpDir,
                 dicomParseProperties.formats,
-                dicomParseProperties.retry
+                dicomParseProperties.retry,
+                dicomParseProperties.deleteAfterParse
         )
     }
 }

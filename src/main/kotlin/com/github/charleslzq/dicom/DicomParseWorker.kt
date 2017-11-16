@@ -16,7 +16,8 @@ class DicomParseWorker(
         private val taskExecutor: AsyncTaskExecutor,
         private val imageTmpDir: String,
         private val acceptFormats: List<String>,
-        private val retry: Int
+        private val retry: Int,
+        private val deleteAfterParse: Boolean
 ) : InitializingBean {
     private val log = LoggerFactory.getLogger(this::class.java)
     private val queue: BlockingQueue<File> = LinkedBlockingQueue()
@@ -51,9 +52,12 @@ class DicomParseWorker(
                 log.info("End parsing $path with ${stopWatch.lastTaskTimeMillis} milli-seconds, $failed fail(s)")
                 logSummary()
                 failedFiles.remove(dcmFile)
+                if (deleteAfterParse) {
+                    dcmFile.delete()
+                }
             } catch (throwable: Throwable) {
                 when (failed) {
-                    in 0..retry -> {
+                    in 0..(retry - 1) -> {
                         log.error("Error occur, skip parsing $path and retry later", throwable)
                         failedFiles.put(dcmFile, failed + 1)
                         queue.put(dcmFile)

@@ -36,7 +36,7 @@ open class DicomFileWatchConfiguration {
             @Qualifier("fileWatchExecutor") asyncTaskExecutor: AsyncTaskExecutor
     ): FileWatcher {
         var fileWatcher = FileWatcher(asyncTaskExecutor, dicomFileWatchProperties.autoStart)
-        val listener = DicomFileListener(dicomParseWorker, fileWatcher)
+        val listener = DicomFileListener(dicomParseWorker)
         dicomFileWatchProperties.paths.forEach {
             Paths.get(it).toFile().mkdirs()
             fileWatcher.register(it, listener, StandardWatchEventKinds.ENTRY_CREATE)
