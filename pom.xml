@@ -67,14 +67,9 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <version>${spring.boot.verion}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.dcm4che</groupId>
-            <artifactId>dcm4che-core</artifactId>
-            <version>${dcm4che.version}</version>
             <exclusions>
                 <exclusion>
-                    <artifactId>slf4j-log4j12</artifactId>
+                    <artifactId>slf4j-api</artifactId>
                     <groupId>org.slf4j</groupId>
                 </exclusion>
             </exclusions>
@@ -87,10 +82,6 @@
                 <exclusion>
                     <artifactId>slf4j-log4j12</artifactId>
                     <groupId>org.slf4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jai_imageio</artifactId>
-                    <groupId>javax.media</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -296,6 +287,13 @@
             </build>
         </profile>
     </profiles>
+
+    <repositories>
+        <repository>
+            <id>local</id>
+            <url>file://${project.basedir}/repo</url>
+        </repository>
+    </repositories>
 
     <pluginRepositories>
         <pluginRepository>
