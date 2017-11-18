@@ -22,25 +22,22 @@ open class DicomStoreConfiguration {
     @Autowired(required = false)
     private var listenerList: MutableList<DicomDataListener> = emptyList<DicomDataListener>().toMutableList()
 
+    @Autowired
+    private lateinit var dicomParseConfigurer: DicomParseConfiguer
+
     @Bean
     @ConditionalOnMissingBean(DicomImageFileSaveHandler::class)
     open fun dicomImageFileSaveHandler(): DicomImageFileSaveHandler {
         return LocalFileSaveHandler()
     }
 
-    @Bean
-    @ConditionalOnMissingBean(name = arrayOf("dicomListenerAsyncTaskExecutor"))
-    open fun dicomListenerAsyncTaskExecutor(): AsyncTaskExecutor {
-        return SimpleAsyncTaskExecutor()
-    }
-
     @Bean(initMethod = "reload")
     open fun dicomDataFileStore(
-            dicomImageFileSaveHandler: DicomImageFileSaveHandler,
-            @Qualifier("dicomListenerAsyncTaskExecutor") asyncTaskExecutor: AsyncTaskExecutor
+            dicomImageFileSaveHandler: DicomImageFileSaveHandler
     ): DicomDataStore {
         Paths.get(dicomFileStoreProperties.dir).toFile().mkdirs()
-        val listeners = listenerList.map { AsyncDicomDataListener(asyncTaskExecutor, it) as DicomDataListener }.toMutableList()
+        val listeners = listenerList.map { AsyncDicomDataListener(dicomParseConfigurer.dataListenerExecutor(), it) as DicomDataListener }
+                .toMutableList()
         return DicomDataFileStore(dicomFileStoreProperties.dir, dicomImageFileSaveHandler, listeners)
     }
 

@@ -24,6 +24,9 @@ open class DicomDataReaderConfiguration {
     @Autowired
     private lateinit var dicomParseProperties: DicomParseProperties
 
+    @Autowired
+    private lateinit var dicomParseConfigurer: DicomParseConfiguer
+
     @Bean
     open fun dicomDataReader(): DicomDataReader {
         val imageConfigList = dicomImageProperties.configs
@@ -38,14 +41,7 @@ open class DicomDataReaderConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(name = arrayOf("dicomParseWorkerExecutor"))
-    open fun dicomParseWorkerExecutor(): AsyncTaskExecutor {
-        return SimpleAsyncTaskExecutor("dicomParseWorkerExecutor-")
-    }
-
-    @Bean
     open fun dicomParseWorker(
-            @Qualifier("dicomParseWorkerExecutor") dicomParseWorkerExecutor: AsyncTaskExecutor,
             dicomDataReader: DicomDataReader,
             dicomDataStore: DicomDataStore
     ): DicomParseWorker {
@@ -53,7 +49,7 @@ open class DicomDataReaderConfiguration {
         return DicomParseWorker(
                 dicomDataReader,
                 dicomDataStore,
-                dicomParseWorkerExecutor,
+                dicomParseConfigurer.parseExecutor(),
                 dicomImageProperties.imgTmpDir,
                 dicomParseProperties.formats,
                 dicomParseProperties.retry,

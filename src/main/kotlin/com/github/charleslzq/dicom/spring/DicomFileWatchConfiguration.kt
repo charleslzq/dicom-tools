@@ -24,18 +24,14 @@ open class DicomFileWatchConfiguration {
     @Autowired
     private lateinit var dicomFileWatchProperties: DicomFileWatchProperties
 
-    @Bean
-    @ConditionalOnMissingBean(name = arrayOf("fileWatchExecutor"))
-    open fun fileWatchExecutor(): AsyncTaskExecutor {
-        return SimpleAsyncTaskExecutor("fileWatchExecutor-")
-    }
+    @Autowired
+    private lateinit var dicomParseConfigurer: DicomParseConfiguer
 
     @Bean
     open fun dicomFileWatchService(
-            dicomParseWorker: DicomParseWorker,
-            @Qualifier("fileWatchExecutor") asyncTaskExecutor: AsyncTaskExecutor
+            dicomParseWorker: DicomParseWorker
     ): FileWatcher {
-        var fileWatcher = FileWatcher(asyncTaskExecutor, dicomFileWatchProperties.autoStart)
+        var fileWatcher = FileWatcher(dicomParseConfigurer.fileWatchExecutor(), dicomFileWatchProperties.autoStart)
         val listener = DicomFileListener(dicomParseWorker)
         dicomFileWatchProperties.paths.forEach {
             Paths.get(it).toFile().mkdirs()
