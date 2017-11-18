@@ -5,11 +5,11 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-@ConditionalOnMissingBean(DicomParseConfiguer::class)
+@ConditionalOnMissingBean(DicomParseConfigurer::class)
 open class ParseConfigConfiguration {
 
     @Bean
-    open fun parseConfigurer(): DicomParseConfiguer {
-        return DicomParseConfiguer()
+    open fun parseConfigurer(): DicomParseConfigurer {
+        return DicomParseConfigurer()
     }
 }

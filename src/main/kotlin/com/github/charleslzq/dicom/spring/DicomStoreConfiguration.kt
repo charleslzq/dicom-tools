@@ -2,13 +2,10 @@ package com.github.charleslzq.dicom.spring
 
 import com.github.charleslzq.dicom.store.*
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.core.task.AsyncTaskExecutor
-import org.springframework.core.task.SimpleAsyncTaskExecutor
 import java.nio.file.Paths
 
 @Configuration
@@ -23,7 +20,7 @@ open class DicomStoreConfiguration {
     private var listenerList: MutableList<DicomDataListener> = emptyList<DicomDataListener>().toMutableList()
 
     @Autowired
-    private lateinit var dicomParseConfigurer: DicomParseConfiguer
+    private lateinit var dicomParseConfigurer: DicomParseConfigurer
 
     @Bean
     @ConditionalOnMissingBean(DicomImageFileSaveHandler::class)
