@@ -14,6 +14,7 @@ class LocalFileSaveHandler : DicomImageFileSaveHandler {
     private fun copyFile(uri: URI, newDir: String): URI {
         val rawPath = Paths.get(uri)
         val fileName = rawPath.toFile().name
+        Paths.get(newDir).toFile().mkdirs()
         val filePath = Paths.get(newDir, fileName)
         Files.copy(rawPath, filePath, StandardCopyOption.REPLACE_EXISTING)
         return filePath.toUri()

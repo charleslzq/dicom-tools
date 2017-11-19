@@ -1,9 +1,6 @@
 package com.github.charleslzq.dicom.spring
 
-import com.github.charleslzq.dicom.data.DicomImageMetaInfo
-import com.github.charleslzq.dicom.data.DicomPatient
-import com.github.charleslzq.dicom.data.DicomSeries
-import com.github.charleslzq.dicom.data.DicomStudy
+import com.github.charleslzq.dicom.data.*
 import com.github.charleslzq.dicom.store.DicomDataListener
 import org.springframework.core.task.AsyncTaskExecutor
 
@@ -12,15 +9,9 @@ class AsyncDicomDataListener(
         private val listener: DicomDataListener
 ) : DicomDataListener {
 
-    override fun onPatientCreate(dicomPatient: DicomPatient) {
+    override fun onPatientMetaSaved(dicomPatientMetaInfo: DicomPatientMetaInfo) {
         asyncTaskExecutor.submit {
-            listener.onPatientCreate(dicomPatient)
-        }
-    }
-
-    override fun onPatientUpdate(oldPatient: DicomPatient, newPatient: DicomPatient) {
-        asyncTaskExecutor.submit {
-            listener.onPatientUpdate(oldPatient, newPatient)
+            listener.onPatientMetaSaved(dicomPatientMetaInfo)
         }
     }
 
@@ -30,15 +21,9 @@ class AsyncDicomDataListener(
         }
     }
 
-    override fun onStudyCreate(patientId: String, dicomStudy: DicomStudy) {
+    override fun onStudyMetaSaved(patientId: String, dicomStudyMetaInfo: DicomStudyMetaInfo) {
         asyncTaskExecutor.submit {
-            listener.onStudyCreate(patientId, dicomStudy)
-        }
-    }
-
-    override fun onStudyUpdate(patientId: String, oldStudy: DicomStudy, newStudy: DicomStudy) {
-        asyncTaskExecutor.submit {
-            listener.onStudyUpdate(patientId, oldStudy, newStudy)
+            listener.onStudyMetaSaved(patientId, dicomStudyMetaInfo)
         }
     }
 
@@ -48,15 +33,9 @@ class AsyncDicomDataListener(
         }
     }
 
-    override fun onSeriesCreate(patientId: String, studyId: String, series: DicomSeries) {
+    override fun onSeriesMetaSaved(patientId: String, studyId: String, dicomSeriesMetaInfo: DicomSeriesMetaInfo) {
         asyncTaskExecutor.submit {
-            listener.onSeriesCreate(patientId, studyId, series)
-        }
-    }
-
-    override fun onSeriesUpdate(patientId: String, studyId: String, oldSeries: DicomSeries, newSeries: DicomSeries) {
-        asyncTaskExecutor.submit {
-            listener.onSeriesUpdate(patientId, studyId, oldSeries, newSeries)
+            listener.onSeriesMetaSaved(patientId, studyId, dicomSeriesMetaInfo)
         }
     }
 
@@ -66,15 +45,9 @@ class AsyncDicomDataListener(
         }
     }
 
-    override fun onImageCreate(patientId: String, studyId: String, seriesId: String, dicomImageMetaInfo: DicomImageMetaInfo) {
+    override fun onImageSaved(patientId: String, studyId: String, seriesId: String, dicomImageMetaInfo: DicomImageMetaInfo) {
         asyncTaskExecutor.submit {
-            listener.onImageCreate(patientId, studyId, seriesId, dicomImageMetaInfo)
-        }
-    }
-
-    override fun onImageUpdate(patientId: String, studyId: String, seriesId: String, oldImageMetaInfo: DicomImageMetaInfo, newImageMetaInfo: DicomImageMetaInfo) {
-        asyncTaskExecutor.submit {
-            listener.onImageUpdate(patientId, studyId, seriesId, oldImageMetaInfo, newImageMetaInfo)
+            listener.onImageSaved(patientId, studyId, seriesId, dicomImageMetaInfo)
         }
     }
 

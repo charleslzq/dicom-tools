@@ -46,7 +46,6 @@ class DicomParseWorker(
                 stopWatch.start(dcmFile.absolutePath)
                 val dicomData = dicomDataReader.parse(dcmFile, imageTmpDir)
                 dicomDataStore.saveDicomData(dicomData)
-                dicomDataStore.reload()
                 stopWatch.stop()
                 taskList.add(stopWatch.lastTaskInfo)
                 log.info("End parsing $path with ${stopWatch.lastTaskTimeMillis} milli-seconds, $failed fail(s)")

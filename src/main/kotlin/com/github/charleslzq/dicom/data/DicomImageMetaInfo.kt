@@ -1,7 +1,7 @@
 package com.github.charleslzq.dicom.data
 
-import java.net.URI
 import org.joda.time.LocalDateTime
+import java.net.URI
 
 data class DicomImageMetaInfo(
         var name: String? = null,
@@ -25,5 +25,6 @@ data class DicomImageMetaInfo(
         var rescaleSlope: Float? = null,
         var rescaleType: String? = null,
         val files: MutableMap<String, URI> = emptyMap<String, URI>().toMutableMap(),
-        val updateTime: MutableMap<String, LocalDateTime> = emptyMap<String, LocalDateTime>().toMutableMap()
+        var createTime: LocalDateTime = LocalDateTime.now(),
+        var updateTime: LocalDateTime = LocalDateTime.now()
 )

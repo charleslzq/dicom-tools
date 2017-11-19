@@ -13,5 +13,6 @@ data class DicomPatientMetaInfo(
         var idIssuer: String? = null,
         var position: String? = null,
         var pregnancyStatus: Int? = null,
-        val updateTime: MutableMap<String, LocalDateTime> = emptyMap<String, LocalDateTime>().toMutableMap()
+        var createTime: LocalDateTime = LocalDateTime.now(),
+        var updateTime: LocalDateTime = LocalDateTime.now()
 )

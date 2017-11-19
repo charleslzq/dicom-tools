@@ -14,5 +14,6 @@ data class DicomSeriesMetaInfo(
         var sliceThickness: Float? = null,
         var spacingBetweenSlices: Float? = null,
         var sliceLocation: Float? = null,
-        val updateTime: MutableMap<String, LocalDateTime> = emptyMap<String, LocalDateTime>().toMutableMap()
+        var createTime: LocalDateTime = LocalDateTime.now(),
+        var updateTime: LocalDateTime = LocalDateTime.now()
 )

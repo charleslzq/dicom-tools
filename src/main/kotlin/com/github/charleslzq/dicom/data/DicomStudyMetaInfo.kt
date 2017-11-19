@@ -12,5 +12,6 @@ data class DicomStudyMetaInfo(
         var date: String? = null,
         var time: String? = null,
         var description: String? = null,
-        val updateTime: MutableMap<String, LocalDateTime> = emptyMap<String, LocalDateTime>().toMutableMap()
+        var createTime: LocalDateTime = LocalDateTime.now(),
+        var updateTime: LocalDateTime = LocalDateTime.now()
 )
