@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Import
 @Retention(AnnotationRetention.RUNTIME)
 @MustBeDocumented
 @Import(
+        ParseConfigConfiguration::class,
         DicomStoreConfiguration::class,
         DicomDataReaderConfiguration::class,
         DicomFileWatchConfiguration::class)
