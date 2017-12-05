@@ -13,6 +13,8 @@ data class DicomPatientMetaInfo(
         var idIssuer: String? = null,
         var position: String? = null,
         var pregnancyStatus: Int? = null,
+        var institutionName: String? = null,
+        var institutionAddress: String? = null,
         var createTime: LocalDateTime = LocalDateTime.now(),
         var updateTime: LocalDateTime = LocalDateTime.now()
 )

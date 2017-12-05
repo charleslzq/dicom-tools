@@ -37,6 +37,8 @@ class DicomDataReader(private val dicomImageReaders: List<DicomImageReader>) {
         getStringFromTagMap(tagMap, Tag.PatientSex, dicomPatient::sex::set)
         getStringFromTagMap(tagMap, Tag.IssuerOfPatientID, dicomPatient::idIssuer::set)
         getIntFromTagMap(tagMap, Tag.PregnancyStatus, dicomPatient::pregnancyStatus::set)
+        getStringFromTagMap(tagMap, Tag.InstitutionName, dicomPatient::institutionName::set)
+        getStringFromTagMap(tagMap, Tag.InstitutionAddress, dicomPatient::institutionAddress::set)
         return dicomPatient
     }
 
@@ -59,11 +61,6 @@ class DicomDataReader(private val dicomImageReaders: List<DicomImageReader>) {
         getIntFromTagMap(tagMap, Tag.SeriesNumber, dicomSeries::number::set)
         getStringFromTagMap(tagMap, Tag.SeriesInstanceUID, dicomSeries::instanceUID::set)
         getStringFromTagMap(tagMap, Tag.Modality, dicomSeries::modality::set)
-        getFloatFromTagMap(tagMap, Tag.ImageOrientation, dicomSeries::imageOrientation::set)
-        getStringFromTagMap(tagMap, Tag.ImagePosition, dicomSeries::imagePosition::set)
-        getFloatFromTagMap(tagMap, Tag.SliceThickness, dicomSeries::sliceThickness::set)
-        getFloatFromTagMap(tagMap, Tag.SpacingBetweenSlices, dicomSeries::spacingBetweenSlices::set)
-        getFloatFromTagMap(tagMap, Tag.SliceLocation, dicomSeries::sliceLocation::set)
         getStringFromTagMap(tagMap, Tag.SeriesDate, dicomSeries::date::set)
         getStringFromTagMap(tagMap, Tag.SeriesTime, dicomSeries::time::set)
         getStringFromTagMap(tagMap, Tag.SeriesDescription, dicomSeries::description::set)
@@ -90,7 +87,14 @@ class DicomDataReader(private val dicomImageReaders: List<DicomImageReader>) {
         getStringFromTagMap(tagMap, Tag.WindowWidth, dicomImage::windowWidth::set)
         getFloatFromTagMap(tagMap, Tag.RescaleIntercept, dicomImage::rescaleIntercept::set)
         getFloatFromTagMap(tagMap, Tag.RescaleSlope, dicomImage::rescaleSlope::set)
+        getFloatFromTagMap(tagMap, Tag.SliceThickness, dicomImage::sliceThickness::set)
+        getFloatFromTagMap(tagMap, Tag.SpacingBetweenSlices, dicomImage::spacingBetweenSlices::set)
+        getFloatFromTagMap(tagMap, Tag.SliceLocation, dicomImage::sliceLocation::set)
         getStringFromTagMap(tagMap, Tag.RescaleType, dicomImage::rescaleType::set)
+        getStringFromTagMap(tagMap, Tag.ImageOrientation, dicomImage::imageOrientation::set)
+        getStringFromTagMap(tagMap, Tag.ImagePosition, dicomImage::imagePosition::set)
+        getFloatFromTagMap(tagMap, Tag.KVP, dicomImage::kvp::set)
+        getIntFromTagMap(tagMap, Tag.XRayTubeCurrent, dicomImage::xRayTubCurrent::set)
         return dicomImage
     }
 

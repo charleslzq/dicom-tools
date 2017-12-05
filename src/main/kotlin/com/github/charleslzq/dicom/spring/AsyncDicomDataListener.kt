@@ -1,6 +1,9 @@
 package com.github.charleslzq.dicom.spring
 
-import com.github.charleslzq.dicom.data.*
+import com.github.charleslzq.dicom.data.DicomImageMetaInfo
+import com.github.charleslzq.dicom.data.DicomPatientMetaInfo
+import com.github.charleslzq.dicom.data.DicomSeriesMetaInfo
+import com.github.charleslzq.dicom.data.DicomStudyMetaInfo
 import com.github.charleslzq.dicom.store.DicomDataListener
 import org.springframework.core.task.AsyncTaskExecutor
 
