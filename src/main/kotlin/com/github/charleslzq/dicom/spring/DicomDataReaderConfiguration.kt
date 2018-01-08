@@ -1,6 +1,9 @@
 package com.github.charleslzq.dicom.spring
 
 import com.github.charleslzq.dicom.DicomParseWorker
+import com.github.charleslzq.dicom.data.DicomDataFactory
+import com.github.charleslzq.dicom.data.ImageMeta
+import com.github.charleslzq.dicom.data.Meta
 import com.github.charleslzq.dicom.reader.DicomDataReader
 import com.github.charleslzq.dicom.reader.DicomImageReader
 import com.github.charleslzq.dicom.store.DicomDataStore
@@ -24,7 +27,9 @@ open class DicomDataReaderConfiguration {
     private lateinit var dicomParseConfigurer: DicomParseConfigurer
 
     @Bean
-    open fun dicomDataReader(): DicomDataReader {
+    open fun <P : Meta, T : Meta, E : Meta, I : ImageMeta> dicomDataReader(
+            dicomDataFactory: DicomDataFactory<P, T, E, I>
+    ): DicomDataReader<P, T, E, I> {
         val imageConfigList = dicomImageProperties.configs
         if (imageConfigList.find { it.label == "default" } == null && dicomImageProperties.useDefault) {
             imageConfigList.add(DicomImageConfig())
@@ -33,14 +38,14 @@ open class DicomDataReaderConfiguration {
             DicomImageReader(it.format, it.suffix, it.label, it.clazz, it.compressionType, it.quality)
         }.toList()
 
-        return DicomDataReader(imageReaderList)
+        return DicomDataReader(dicomDataFactory, imageReaderList)
     }
 
     @Bean
-    open fun dicomParseWorker(
-            dicomDataReader: DicomDataReader,
-            dicomDataStore: DicomDataStore
-    ): DicomParseWorker {
+    open fun <P : Meta, T : Meta, E : Meta, I : ImageMeta> dicomParseWorker(
+            dicomDataReader: DicomDataReader<P, T, E, I>,
+            dicomDataStore: DicomDataStore<P, T, E, I>
+    ): DicomParseWorker<P, T, E, I> {
         Paths.get(dicomImageProperties.imgTmpDir).toFile().mkdirs()
         return DicomParseWorker(
                 dicomDataReader,

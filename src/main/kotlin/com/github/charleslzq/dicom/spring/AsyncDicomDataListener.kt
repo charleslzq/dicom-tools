@@ -1,18 +1,16 @@
 package com.github.charleslzq.dicom.spring
 
-import com.github.charleslzq.dicom.data.DicomImageMetaInfo
-import com.github.charleslzq.dicom.data.DicomPatientMetaInfo
-import com.github.charleslzq.dicom.data.DicomSeriesMetaInfo
-import com.github.charleslzq.dicom.data.DicomStudyMetaInfo
+import com.github.charleslzq.dicom.data.ImageMeta
+import com.github.charleslzq.dicom.data.Meta
 import com.github.charleslzq.dicom.store.DicomDataListener
 import org.springframework.core.task.AsyncTaskExecutor
 
-class AsyncDicomDataListener(
+class AsyncDicomDataListener<in P : Meta, in T : Meta, in E : Meta, in I : ImageMeta>(
         private val asyncTaskExecutor: AsyncTaskExecutor,
-        private val listener: DicomDataListener
-) : DicomDataListener {
+        private val listener: DicomDataListener<P, T, E, I>
+) : DicomDataListener<P, T, E, I> {
 
-    override fun onPatientMetaSaved(dicomPatientMetaInfo: DicomPatientMetaInfo) {
+    override fun onPatientMetaSaved(dicomPatientMetaInfo: P) {
         asyncTaskExecutor.submit {
             listener.onPatientMetaSaved(dicomPatientMetaInfo)
         }
@@ -24,7 +22,7 @@ class AsyncDicomDataListener(
         }
     }
 
-    override fun onStudyMetaSaved(patientId: String, dicomStudyMetaInfo: DicomStudyMetaInfo) {
+    override fun onStudyMetaSaved(patientId: String, dicomStudyMetaInfo: T) {
         asyncTaskExecutor.submit {
             listener.onStudyMetaSaved(patientId, dicomStudyMetaInfo)
         }
@@ -36,7 +34,7 @@ class AsyncDicomDataListener(
         }
     }
 
-    override fun onSeriesMetaSaved(patientId: String, studyId: String, dicomSeriesMetaInfo: DicomSeriesMetaInfo) {
+    override fun onSeriesMetaSaved(patientId: String, studyId: String, dicomSeriesMetaInfo: E) {
         asyncTaskExecutor.submit {
             listener.onSeriesMetaSaved(patientId, studyId, dicomSeriesMetaInfo)
         }
@@ -48,7 +46,7 @@ class AsyncDicomDataListener(
         }
     }
 
-    override fun onImageSaved(patientId: String, studyId: String, seriesId: String, dicomImageMetaInfo: DicomImageMetaInfo) {
+    override fun onImageSaved(patientId: String, studyId: String, seriesId: String, dicomImageMetaInfo: I) {
         asyncTaskExecutor.submit {
             listener.onImageSaved(patientId, studyId, seriesId, dicomImageMetaInfo)
         }

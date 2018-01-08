@@ -1,5 +1,8 @@
 package com.github.charleslzq.dicom.spring
 
+import com.github.charleslzq.dicom.data.DicomDataFactory
+import com.github.charleslzq.dicom.data.ImageMeta
+import com.github.charleslzq.dicom.data.Meta
 import com.github.charleslzq.dicom.store.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -16,9 +19,6 @@ open class DicomStoreConfiguration {
     @Autowired
     private lateinit var dicomFileStoreProperties: DicomFileStoreProperties
 
-    @Autowired(required = false)
-    private var listenerList: MutableList<DicomDataListener> = emptyList<DicomDataListener>().toMutableList()
-
     @Autowired
     private lateinit var dicomParseConfigurer: DicomParseConfigurer
 
@@ -29,13 +29,15 @@ open class DicomStoreConfiguration {
     }
 
     @Bean
-    open fun dicomDataFileStore(
-            dicomImageFileSaveHandler: DicomImageFileSaveHandler
-    ): DicomDataStore {
+    open fun <P : Meta, T : Meta, E : Meta, I : ImageMeta> dicomDataFileStore(
+            dicomDataFactory: DicomDataFactory<P, T, E, I>,
+            dicomImageFileSaveHandler: DicomImageFileSaveHandler,
+            @Autowired(required = false) listenerList: MutableList<DicomDataListener<P, T, E, I>> = mutableListOf()
+    ): DicomDataStore<P, T, E, I> {
         Paths.get(dicomFileStoreProperties.dir).toFile().mkdirs()
-        val listeners = listenerList.map { AsyncDicomDataListener(dicomParseConfigurer.dataListenerExecutor(), it) as DicomDataListener }
+        val listeners = listenerList.map { AsyncDicomDataListener(dicomParseConfigurer.dataListenerExecutor(), it) as DicomDataListener<P, T, E, I> }
                 .toMutableList()
-        return DicomDataFileStore(dicomFileStoreProperties.dir, dicomImageFileSaveHandler, listeners)
+        return DicomDataFileStore(dicomFileStoreProperties.dir, dicomDataFactory, dicomImageFileSaveHandler, listeners)
     }
 
 }

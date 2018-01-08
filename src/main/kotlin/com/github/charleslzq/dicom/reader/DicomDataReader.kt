@@ -1,11 +1,13 @@
 package com.github.charleslzq.dicom.reader
 
-import com.github.charleslzq.dicom.data.*
-import org.dcm4che3.data.Tag
+import com.github.charleslzq.dicom.data.DicomData
+import com.github.charleslzq.dicom.data.DicomDataFactory
+import com.github.charleslzq.dicom.data.ImageMeta
+import com.github.charleslzq.dicom.data.Meta
 import org.dcm4che3.io.DicomInputStream
 import java.io.File
 
-class DicomDataReader<out P: Meta, out T: Meta, out E: Meta, out I: ImageMeta>(
+class DicomDataReader<out P : Meta, out T : Meta, out E : Meta, out I : ImageMeta>(
         private val dicomDataFactory: DicomDataFactory<P, T, E, I>,
         private val dicomImageReaders: List<DicomImageReader>
 ) {
