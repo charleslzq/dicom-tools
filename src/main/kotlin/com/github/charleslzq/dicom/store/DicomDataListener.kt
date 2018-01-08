@@ -1,17 +1,15 @@
 package com.github.charleslzq.dicom.store
 
-import com.github.charleslzq.dicom.data.DicomImageMetaInfo
-import com.github.charleslzq.dicom.data.DicomPatientMetaInfo
-import com.github.charleslzq.dicom.data.DicomSeriesMetaInfo
-import com.github.charleslzq.dicom.data.DicomStudyMetaInfo
+import com.github.charleslzq.dicom.data.ImageMeta
+import com.github.charleslzq.dicom.data.Meta
 
-interface DicomDataListener {
-    fun onPatientMetaSaved(dicomPatientMetaInfo: DicomPatientMetaInfo) {}
+interface DicomDataListener<in P : Meta, in T : Meta, in E : Meta, in I : ImageMeta> {
+    fun onPatientMetaSaved(dicomPatientMetaInfo: P) {}
     fun onPatientDelete(patientId: String) {}
-    fun onStudyMetaSaved(patientId: String, dicomStudyMetaInfo: DicomStudyMetaInfo) {}
+    fun onStudyMetaSaved(patientId: String, dicomStudyMetaInfo: T) {}
     fun onStudyDelete(patientId: String, studyId: String) {}
-    fun onSeriesMetaSaved(patientId: String, studyId: String, dicomSeriesMetaInfo: DicomSeriesMetaInfo) {}
+    fun onSeriesMetaSaved(patientId: String, studyId: String, dicomSeriesMetaInfo: E) {}
     fun onSeriesDelete(patientId: String, studyId: String, seriesId: String) {}
-    fun onImageSaved(patientId: String, studyId: String, seriesId: String, dicomImageMetaInfo: DicomImageMetaInfo) {}
+    fun onImageSaved(patientId: String, studyId: String, seriesId: String, dicomImageMetaInfo: I) {}
     fun onImageDelete(patientId: String, studyId: String, seriesId: String, imageNum: String) {}
 }

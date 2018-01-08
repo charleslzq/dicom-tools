@@ -8,8 +8,9 @@ data class DicomSeriesMetaInfo(
         val modality: String = "",
         val date: String = "",
         val time: String = "",
-        val description: String = "",
-        override val uid: String = instanceUID,
-        override val createTime: LocalDateTime = LocalDateTime.now(),
-        override val updateTime: LocalDateTime = LocalDateTime.now()
-) : Meta
+        val description: String = ""
+) : Meta {
+    override val uid: String = instanceUID
+    override var createTime: LocalDateTime = LocalDateTime.now()
+    override var updateTime: LocalDateTime = LocalDateTime.now()
+}

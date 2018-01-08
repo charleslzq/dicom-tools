@@ -7,73 +7,16 @@ import org.joda.time.LocalDateTime
 import java.io.File
 import java.util.*
 
-class DicomDataFileStore(
+class DicomDataFileStore<P : Meta, T : Meta, E : Meta, I : ImageMeta>(
         private val basePath: String,
+        private val dicomDataFactory: DicomDataFactory<P, T, E, I>,
         private val saveHandler: DicomImageFileSaveHandler,
-        private val listeners: MutableList<DicomDataListener> = emptyList<DicomDataListener>().toMutableList()
-) : DicomDataStore {
+        private val listeners: MutableList<DicomDataListener<P, T, E, I>> = mutableListOf()
+) : DicomDataStore<P, T, E, I> {
     private val metaFileName = "meta.json"
     private val gson = Converters.registerLocalDateTime(GsonBuilder()).create()
 
     private val baseDir = File(basePath)
-    private val patientFieldsToCheck = listOf<FieldChecker<DicomPatientMetaInfo, Any>>(
-            FieldChecker(DicomPatientMetaInfo::uid::get),
-            FieldChecker(DicomPatientMetaInfo::name::get),
-            FieldChecker(DicomPatientMetaInfo::address::get),
-            FieldChecker(DicomPatientMetaInfo::sex::get),
-            FieldChecker(DicomPatientMetaInfo::birthday::get),
-            FieldChecker(DicomPatientMetaInfo::birthTime::get),
-            FieldChecker(DicomPatientMetaInfo::weight::get),
-            FieldChecker(DicomPatientMetaInfo::idIssuer::get),
-            FieldChecker(DicomPatientMetaInfo::position::get),
-            FieldChecker(DicomPatientMetaInfo::pregnancyStatus::get)
-    )
-    private val studyFieldsToCheck = listOf<FieldChecker<DicomStudyMetaInfo, Any>>(
-            FieldChecker(DicomStudyMetaInfo::uid::get),
-            FieldChecker(DicomStudyMetaInfo::accessionNumber::get),
-            FieldChecker(DicomStudyMetaInfo::instanceUID::get),
-            FieldChecker(DicomStudyMetaInfo::modalities::get),
-            FieldChecker(DicomStudyMetaInfo::bodyPart::get),
-            FieldChecker(DicomStudyMetaInfo::patientAge::get),
-            FieldChecker(DicomStudyMetaInfo::date::get),
-            FieldChecker(DicomStudyMetaInfo::time::get),
-            FieldChecker(DicomStudyMetaInfo::description::get)
-    )
-    private val seriesFieldsToCheck = listOf<FieldChecker<DicomSeriesMetaInfo, Any>>(
-            FieldChecker(DicomSeriesMetaInfo::number::get),
-            FieldChecker(DicomSeriesMetaInfo::instanceUID::get),
-            FieldChecker(DicomSeriesMetaInfo::modality::get),
-            FieldChecker(DicomSeriesMetaInfo::date::get),
-            FieldChecker(DicomSeriesMetaInfo::time::get),
-            FieldChecker(DicomSeriesMetaInfo::description::get),
-            FieldChecker(DicomSeriesMetaInfo::imagePosition::get),
-            FieldChecker(DicomSeriesMetaInfo::imageOrientation::get),
-            FieldChecker(DicomSeriesMetaInfo::sliceThickness::get),
-            FieldChecker(DicomSeriesMetaInfo::spacingBetweenSlices::get),
-            FieldChecker(DicomSeriesMetaInfo::sliceLocation::get)
-    )
-    private val imageFieldsToCheck = listOf<FieldChecker<DicomImageMetaInfo, Any>>(
-            FieldChecker(DicomImageMetaInfo::name::get),
-            FieldChecker(DicomImageMetaInfo::imageType::get),
-            FieldChecker(DicomImageMetaInfo::sopUID::get),
-            FieldChecker(DicomImageMetaInfo::date::get),
-            FieldChecker(DicomImageMetaInfo::time::get),
-            FieldChecker(DicomImageMetaInfo::instanceNumber::get),
-            FieldChecker(DicomImageMetaInfo::samplesPerPixel::get),
-            FieldChecker(DicomImageMetaInfo::photometricInterpretation::get),
-            FieldChecker(DicomImageMetaInfo::rows::get),
-            FieldChecker(DicomImageMetaInfo::columns::get),
-            FieldChecker(DicomImageMetaInfo::pixelSpacing::get),
-            FieldChecker(DicomImageMetaInfo::bitsAllocated::get),
-            FieldChecker(DicomImageMetaInfo::bitsStored::get),
-            FieldChecker(DicomImageMetaInfo::highBit::get),
-            FieldChecker(DicomImageMetaInfo::pixelRepresentation::get),
-            FieldChecker(DicomImageMetaInfo::windowCenter::get),
-            FieldChecker(DicomImageMetaInfo::windowWidth::get),
-            FieldChecker(DicomImageMetaInfo::rescaleIntercept::get),
-            FieldChecker(DicomImageMetaInfo::rescaleSlope::get),
-            FieldChecker(DicomImageMetaInfo::rescaleType::get)
-    )
 
     init {
         baseDir.mkdirs()
@@ -83,7 +26,7 @@ class DicomDataFileStore(
         return listValidSubDirs(basePath)
     }
 
-    override fun getPatient(patientId: String): DicomPatient? {
+    override fun getPatient(patientId: String): DicomPatient<P, T, E, I>? {
         val metaInfo = getPatientMeta(patientId)
         if (metaInfo != null) {
             val studyList = this.getStudyIdList(patientId).mapNotNull { getStudy(patientId, it) }.toMutableList()
@@ -92,15 +35,15 @@ class DicomDataFileStore(
         return null
     }
 
-    override fun getPatientMeta(patientId: String): DicomPatientMetaInfo? {
-        return loadMetaFile(DicomPatientMetaInfo::class.java, basePath, patientId)
+    override fun getPatientMeta(patientId: String): P? {
+        return loadMetaFile(dicomDataFactory.patientMetaClass.java, basePath, patientId)
     }
 
     override fun getStudyIdList(patientId: String): List<String> {
         return listValidSubDirs(basePath, patientId)
     }
 
-    override fun getStudy(patientId: String, studyId: String): DicomStudy? {
+    override fun getStudy(patientId: String, studyId: String): DicomStudy<T, E, I>? {
         val metaInfo = getStudyMeta(patientId, studyId)
         if (metaInfo != null) {
             val seriesList = getSeriesIdList(patientId, studyId).mapNotNull { getSeries(patientId, studyId, it) }.toMutableList()
@@ -109,15 +52,15 @@ class DicomDataFileStore(
         return null
     }
 
-    override fun getStudyMeta(patientId: String, studyId: String): DicomStudyMetaInfo? {
-        return loadMetaFile(DicomStudyMetaInfo::class.java, basePath, patientId, studyId)
+    override fun getStudyMeta(patientId: String, studyId: String): T? {
+        return loadMetaFile(dicomDataFactory.studyMetaClass, basePath, patientId, studyId)
     }
 
     override fun getSeriesIdList(patientId: String, studyId: String): List<String> {
         return listValidSubDirs(basePath, patientId, studyId)
     }
 
-    override fun getSeries(patientId: String, studyId: String, seriesId: String): DicomSeries? {
+    override fun getSeries(patientId: String, studyId: String, seriesId: String): DicomSeries<E, I>? {
         val metaInfo = getSeriesMeta(patientId, studyId, seriesId)
         if (metaInfo != null) {
             val imageList = getImageIdList(patientId, studyId, seriesId)
@@ -128,26 +71,26 @@ class DicomDataFileStore(
         return null
     }
 
-    override fun getSeriesMeta(patientId: String, studyId: String, seriesId: String): DicomSeriesMetaInfo? {
-        return loadMetaFile(DicomSeriesMetaInfo::class.java, basePath, patientId, studyId, seriesId)
+    override fun getSeriesMeta(patientId: String, studyId: String, seriesId: String): E? {
+        return loadMetaFile(dicomDataFactory.seriesMetaClass, basePath, patientId, studyId, seriesId)
     }
 
     override fun getImageIdList(patientId: String, studyId: String, seriesId: String): List<String> {
         return listValidSubDirs(basePath, patientId, studyId, seriesId)
     }
 
-    override fun getImageMeta(patientId: String, studyId: String, seriesId: String, imageNum: String): DicomImageMetaInfo? {
-        return loadMetaFile(DicomImageMetaInfo::class.java, basePath, patientId, studyId, seriesId, imageNum)
+    override fun getImageMeta(patientId: String, studyId: String, seriesId: String, imageNum: String): I? {
+        return loadMetaFile(dicomDataFactory.imageMetaClass, basePath, patientId, studyId, seriesId, imageNum)
     }
 
-    override fun savePatient(patient: DicomPatient) {
+    override fun savePatient(patient: DicomPatient<P, T, E, I>) {
         savePatientMeta(patient.metaInfo)
-        val patientId = patient.metaInfo.uid!!
+        val patientId = patient.metaInfo.uid
         patient.studies.forEach { saveStudy(patientId, it) }
     }
 
-    override fun savePatientMeta(patientMetaInfo: DicomPatientMetaInfo) {
-        val patientId = patientMetaInfo.uid!!
+    override fun savePatientMeta(patientMetaInfo: P) {
+        val patientId = patientMetaInfo.uid
         val oldMeta = getPatientMeta(patientId)
         val now = LocalDateTime.now()
         var save = false
@@ -156,7 +99,7 @@ class DicomDataFileStore(
             patientMetaInfo.updateTime = now
             save = true
         } else {
-            if (patientFieldsToCheck.any { !it.needUpdate(oldMeta, patientMetaInfo) }) {
+            if (oldMeta != patientMetaInfo) {
                 patientMetaInfo.createTime = oldMeta.createTime
                 patientMetaInfo.updateTime = now
                 save = true
@@ -168,14 +111,14 @@ class DicomDataFileStore(
         }
     }
 
-    override fun saveStudy(patientId: String, study: DicomStudy) {
+    override fun saveStudy(patientId: String, study: DicomStudy<T, E, I>) {
         saveStudyMeta(patientId, study.metaInfo)
-        val studyId = study.metaInfo.instanceUID!!
+        val studyId = study.metaInfo.uid
         study.series.forEach { saveSeries(patientId, studyId, it) }
     }
 
-    override fun saveStudyMeta(patientId: String, studyMetaInfo: DicomStudyMetaInfo) {
-        val studyId = studyMetaInfo.instanceUID!!
+    override fun saveStudyMeta(patientId: String, studyMetaInfo: T) {
+        val studyId = studyMetaInfo.uid!!
         val oldMeta = getStudyMeta(patientId, studyId)
         val now = LocalDateTime.now()
         var save = false
@@ -184,7 +127,7 @@ class DicomDataFileStore(
             studyMetaInfo.updateTime = now
             save = true
         } else {
-            if (studyFieldsToCheck.any { it.needUpdate(oldMeta, studyMetaInfo) }) {
+            if (oldMeta != studyMetaInfo) {
                 studyMetaInfo.createTime = oldMeta.createTime
                 studyMetaInfo.updateTime = now
                 save = true
@@ -197,14 +140,14 @@ class DicomDataFileStore(
         }
     }
 
-    override fun saveSeries(patientId: String, studyId: String, series: DicomSeries) {
-        val seriesId = series.metaInfo.instanceUID!!
+    override fun saveSeries(patientId: String, studyId: String, series: DicomSeries<E, I>) {
+        val seriesId = series.metaInfo.uid
         saveSeriesMeta(patientId, studyId, series.metaInfo)
         series.images.forEach { saveImage(patientId, studyId, seriesId, it) }
     }
 
-    override fun saveSeriesMeta(patientId: String, studyId: String, seriesMetaInfo: DicomSeriesMetaInfo) {
-        val seriesId = seriesMetaInfo.instanceUID!!
+    override fun saveSeriesMeta(patientId: String, studyId: String, seriesMetaInfo: E) {
+        val seriesId = seriesMetaInfo.uid
         val oldMeta = getSeriesMeta(patientId, studyId, seriesId)
         val now = LocalDateTime.now()
         var save = false
@@ -213,7 +156,7 @@ class DicomDataFileStore(
             seriesMetaInfo.updateTime = now
             save = true
         } else {
-            if (seriesFieldsToCheck.any { it.needUpdate(oldMeta, seriesMetaInfo) }) {
+            if (oldMeta != seriesMetaInfo) {
                 seriesMetaInfo.createTime = oldMeta.createTime
                 seriesMetaInfo.updateTime = now
                 save = true
@@ -226,8 +169,8 @@ class DicomDataFileStore(
         }
     }
 
-    override fun saveImage(patientId: String, studyId: String, seriesId: String, dicomImageMetaInfo: DicomImageMetaInfo) {
-        val imageNum = dicomImageMetaInfo.instanceNumber!!
+    override fun saveImage(patientId: String, studyId: String, seriesId: String, dicomImageMetaInfo: I) {
+        val imageNum = dicomImageMetaInfo.uid
         val imageDirPath = Paths.get(basePath, patientId, studyId, seriesId, imageNum)
         val oldMeta = getImageMeta(patientId, studyId, seriesId, imageNum)
         val now = LocalDateTime.now()
@@ -238,7 +181,7 @@ class DicomDataFileStore(
             dicomImageMetaInfo.updateTime = now
             save = true
         } else {
-            if (imageFieldsToCheck.any { it.needUpdate(oldMeta, dicomImageMetaInfo) }) {
+            if (oldMeta != dicomImageMetaInfo) {
                 dicomImageMetaInfo.createTime = oldMeta.createTime
                 dicomImageMetaInfo.updateTime = now
                 save = true
@@ -254,10 +197,10 @@ class DicomDataFileStore(
         }
     }
 
-    override fun saveDicomData(dicomData: DicomData) {
-        val patient = DicomPatient(dicomData.patientMetaInfo)
-        val study = DicomStudy(dicomData.studyMetaInfo)
-        val series = DicomSeries(dicomData.seriesMetaInfo)
+    override fun saveDicomData(dicomData: DicomData<P, T, E, I>) {
+        val patient = DicomPatient<P, T, E, I>(dicomData.patientMetaInfo)
+        val study = DicomStudy<T, E, I>(dicomData.studyMetaInfo)
+        val series = DicomSeries<E, I>(dicomData.seriesMetaInfo)
         series.images.add(dicomData.imageMetaInfo)
         study.series.add(series)
         patient.studies.add(study)

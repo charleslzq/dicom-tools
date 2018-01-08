@@ -30,9 +30,10 @@ data class DicomImageMetaInfo(
         val spacingBetweenSlices: Float = 0f,
         val sliceLocation: Float = 0f,
         val kvp: Float = 0f,
-        val xRayTubCurrent: Int = -1,
-        override val uid: String = instanceNumber,
-        override val files: MutableMap<String, URI> = emptyMap<String, URI>().toMutableMap(),
-        override val createTime: LocalDateTime = LocalDateTime.now(),
-        override val updateTime: LocalDateTime = LocalDateTime.now()
-) : ImageMeta
+        val xRayTubCurrent: Int = -1
+) : ImageMeta {
+    override val uid: String = instanceNumber
+    override val files: MutableMap<String, URI> = emptyMap<String, URI>().toMutableMap()
+    override var createTime: LocalDateTime = LocalDateTime.now()
+    override var updateTime: LocalDateTime = LocalDateTime.now()
+}

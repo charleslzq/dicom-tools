@@ -5,7 +5,7 @@ import org.dcm4che3.data.Tag
 import org.dcm4che3.io.DicomInputStream
 import java.io.File
 
-class DicomDataReader<P: Meta, T: Meta, E: Meta, I: ImageMeta>(
+class DicomDataReader<out P: Meta, out T: Meta, out E: Meta, out I: ImageMeta>(
         private val dicomDataFactory: DicomDataFactory<P, T, E, I>,
         private val dicomImageReaders: List<DicomImageReader>
 ) {

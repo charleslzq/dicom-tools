@@ -2,8 +2,13 @@ package com.github.charleslzq.dicom.data
 
 import org.dcm4che3.data.Tag
 import java.io.File
+import kotlin.reflect.KClass
 
-abstract class DicomDataFactory<out P : Meta, out T : Meta, out E : Meta, out I : ImageMeta> {
+abstract class DicomDataFactory<P : Meta, T : Meta, E : Meta, I : ImageMeta> {
+    abstract val patientMetaClass: KClass<P>
+    abstract val studyMetaClass: Class<T>
+    abstract val seriesMetaClass: Class<E>
+    abstract val imageMetaClass: Class<I>
     abstract fun from(tagMap: Map<Int, DicomTagInfo>, dcmFile: File): DicomData<P, T, E, I>
 
     inline fun <reified T> getOrDefault(tagMap: Map<Int, DicomTagInfo>, tagNo: Int, default: T): T {
@@ -11,6 +16,15 @@ abstract class DicomDataFactory<out P : Meta, out T : Meta, out E : Meta, out I 
     }
 
     class Default : DicomDataFactory<DicomPatientMetaInfo, DicomStudyMetaInfo, DicomSeriesMetaInfo, DicomImageMetaInfo>() {
+        override val patientMetaClass: KClass<DicomPatientMetaInfo>
+            get() = DicomPatientMetaInfo::class
+        override val studyMetaClass: Class<DicomStudyMetaInfo>
+            get() = DicomStudyMetaInfo::class.java
+        override val seriesMetaClass: Class<DicomSeriesMetaInfo>
+            get() = DicomSeriesMetaInfo::class.java
+        override val imageMetaClass: Class<DicomImageMetaInfo>
+            get() = DicomImageMetaInfo::class.java
+
         override fun from(tagMap: Map<Int, DicomTagInfo>, dcmFile: File): DicomData<DicomPatientMetaInfo, DicomStudyMetaInfo, DicomSeriesMetaInfo, DicomImageMetaInfo> {
             return DicomData(
                     getPatient(tagMap),

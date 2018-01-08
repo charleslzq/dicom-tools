@@ -1,5 +1,7 @@
 package com.github.charleslzq.dicom
 
+import com.github.charleslzq.dicom.data.ImageMeta
+import com.github.charleslzq.dicom.data.Meta
 import com.github.charleslzq.dicom.reader.DicomDataReader
 import com.github.charleslzq.dicom.store.DicomDataStore
 import org.slf4j.LoggerFactory
@@ -10,9 +12,9 @@ import java.io.File
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 
-class DicomParseWorker(
-        private val dicomDataReader: DicomDataReader,
-        private val dicomDataStore: DicomDataStore,
+class DicomParseWorker<P : Meta, T : Meta, E : Meta, I : ImageMeta>(
+        private val dicomDataReader: DicomDataReader<P, T, E, I>,
+        private val dicomDataStore: DicomDataStore<P, T, E, I>,
         private val taskExecutor: AsyncTaskExecutor,
         private val imageTmpDir: String,
         private val acceptFormats: List<String>,

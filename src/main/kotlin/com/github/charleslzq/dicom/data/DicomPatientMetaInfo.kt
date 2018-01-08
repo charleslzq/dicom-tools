@@ -14,8 +14,9 @@ data class DicomPatientMetaInfo(
         val position: String = "",
         val pregnancyStatus: Int = -1,
         val institutionName: String = "",
-        val institutionAddress: String = "",
-        override val uid: String = id,
-        override val createTime: LocalDateTime = LocalDateTime.now(),
-        override val updateTime: LocalDateTime = LocalDateTime.now()
-) : Meta
+        val institutionAddress: String = ""
+) : Meta {
+    override val uid: String = id
+    override var createTime: LocalDateTime = LocalDateTime.now()
+    override var updateTime: LocalDateTime = LocalDateTime.now()
+}
