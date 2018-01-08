@@ -1,6 +1,6 @@
 package com.github.charleslzq.dicom.data
 
-data class DicomStudy(
-        val metaInfo: DicomStudyMetaInfo,
-        val series: MutableList<DicomSeries> = emptyList<DicomSeries>().toMutableList()
+data class DicomStudy<out T : Meta, E : Meta, I : ImageMeta>(
+        val metaInfo: T,
+        val series: MutableList<DicomSeries<E, I>> = mutableListOf()
 )

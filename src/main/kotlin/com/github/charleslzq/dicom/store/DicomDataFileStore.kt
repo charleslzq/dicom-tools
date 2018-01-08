@@ -17,7 +17,7 @@ class DicomDataFileStore(
 
     private val baseDir = File(basePath)
     private val patientFieldsToCheck = listOf<FieldChecker<DicomPatientMetaInfo, Any>>(
-            FieldChecker(DicomPatientMetaInfo::id::get),
+            FieldChecker(DicomPatientMetaInfo::uid::get),
             FieldChecker(DicomPatientMetaInfo::name::get),
             FieldChecker(DicomPatientMetaInfo::address::get),
             FieldChecker(DicomPatientMetaInfo::sex::get),
@@ -29,7 +29,7 @@ class DicomDataFileStore(
             FieldChecker(DicomPatientMetaInfo::pregnancyStatus::get)
     )
     private val studyFieldsToCheck = listOf<FieldChecker<DicomStudyMetaInfo, Any>>(
-            FieldChecker(DicomStudyMetaInfo::id::get),
+            FieldChecker(DicomStudyMetaInfo::uid::get),
             FieldChecker(DicomStudyMetaInfo::accessionNumber::get),
             FieldChecker(DicomStudyMetaInfo::instanceUID::get),
             FieldChecker(DicomStudyMetaInfo::modalities::get),
@@ -142,12 +142,12 @@ class DicomDataFileStore(
 
     override fun savePatient(patient: DicomPatient) {
         savePatientMeta(patient.metaInfo)
-        val patientId = patient.metaInfo.id!!
+        val patientId = patient.metaInfo.uid!!
         patient.studies.forEach { saveStudy(patientId, it) }
     }
 
     override fun savePatientMeta(patientMetaInfo: DicomPatientMetaInfo) {
-        val patientId = patientMetaInfo.id!!
+        val patientId = patientMetaInfo.uid!!
         val oldMeta = getPatientMeta(patientId)
         val now = LocalDateTime.now()
         var save = false

@@ -3,15 +3,16 @@ package com.github.charleslzq.dicom.data
 import org.joda.time.LocalDateTime
 
 data class DicomStudyMetaInfo(
-        var id: String? = null,
-        var accessionNumber: String? = null,
-        var instanceUID: String? = null,
-        var modalities: String? = null,
-        var bodyPart: String? = null,
-        var patientAge: Int? = null,
-        var date: String? = null,
-        var time: String? = null,
-        var description: String? = null,
-        var createTime: LocalDateTime = LocalDateTime.now(),
-        var updateTime: LocalDateTime = LocalDateTime.now()
-)
+        val id: String = "",
+        val accessionNumber: String = "",
+        val instanceUID: String,
+        val modalities: String = "",
+        val bodyPart: String = "",
+        val patientAge: Int = -1,
+        val date: String = "",
+        val time: String = "",
+        val description: String = "",
+        override val uid: String = instanceUID,
+        override val createTime: LocalDateTime = LocalDateTime.now(),
+        override val updateTime: LocalDateTime = LocalDateTime.now()
+) : Meta
