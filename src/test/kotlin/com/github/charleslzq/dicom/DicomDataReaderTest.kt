@@ -1,5 +1,6 @@
 package com.github.charleslzq.dicom
 
+import com.github.charleslzq.dicom.data.DicomDataFactory
 import com.github.charleslzq.dicom.reader.DicomDataReader
 import com.github.charleslzq.dicom.reader.DicomImageReader
 import org.assertj.core.util.Lists
@@ -28,7 +29,7 @@ class DicomDataReaderTest {
     fun testReadDataSuccess() {
         val dicomFile = TestUtil.readFile(path)
         val dicomImageReader = DicomImageReader("PNG", "png")
-        val dicomDataReader = DicomDataReader(Lists.newArrayList(dicomImageReader))
+        val dicomDataReader = DicomDataReader(DicomDataFactory.Default(), Lists.newArrayList(dicomImageReader))
         val dir = File(dirBase)
         assertThat("开始时目录为空", dir.listFiles(), arrayWithSize(0))
 

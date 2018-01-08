@@ -1,5 +1,6 @@
 package com.github.charleslzq.dicom
 
+import com.github.charleslzq.dicom.data.DicomDataFactory
 import com.github.charleslzq.dicom.reader.DicomDataReader
 import com.github.charleslzq.dicom.reader.DicomImageReader
 import com.github.charleslzq.dicom.store.DicomDataFileStore
@@ -22,10 +23,10 @@ class DicomDataFileStoreTest {
             dir.deleteRecursively()
         }
         dir.mkdirs()
-        val dataStore = DicomDataFileStore(dirBase, LocalFileSaveHandler())
+        val dataStore = DicomDataFileStore(dirBase, DicomDataFactory.Default(), LocalFileSaveHandler())
         val dicomFile = TestUtil.readFile(path)
         val dicomImageReader = DicomImageReader("PNG", "png")
-        val dicomDataReader = DicomDataReader(listOf(dicomImageReader))
+        val dicomDataReader = DicomDataReader(DicomDataFactory.Default(), listOf(dicomImageReader))
         val dicomData = dicomDataReader.parse(dicomFile, dirBase)
         dataStore.saveDicomData(dicomData)
 
@@ -37,7 +38,7 @@ class DicomDataFileStoreTest {
 
     @Test
     fun testDataLoadSuccess() {
-        val dataStore = DicomDataFileStore(TestUtil.readFile(loadBase).absolutePath, LocalFileSaveHandler())
+        val dataStore = DicomDataFileStore(TestUtil.readFile(loadBase).absolutePath, DicomDataFactory.Default(), LocalFileSaveHandler())
         val patients = dataStore.getPatientIdList()
 
         assertThat("有一个病人", patients.size, `is`(1))
