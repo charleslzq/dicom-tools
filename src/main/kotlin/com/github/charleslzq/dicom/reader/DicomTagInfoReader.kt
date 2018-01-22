@@ -9,9 +9,7 @@ class DicomTagInfoReader : DicomInputParser<List<DicomTagInfo>> {
     private val tagList: MutableList<DicomTagInfo> = emptyList<DicomTagInfo>().toMutableList()
     private lateinit var bulkDataUri: String
 
-    override fun get(): List<DicomTagInfo> {
-        return tagList.toList()
-    }
+    override fun get() = tagList.toList()
 
     override fun readValue(dicomInputStream: DicomInputStream, attributes: Attributes) {
         val tag = dicomInputStream.tag()

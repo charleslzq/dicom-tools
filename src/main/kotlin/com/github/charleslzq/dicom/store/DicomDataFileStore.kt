@@ -22,9 +22,7 @@ class DicomDataFileStore<P : Meta, T : Meta, E : Meta, I : ImageMeta>(
         baseDir.mkdirs()
     }
 
-    override fun getPatientIdList(): List<String> {
-        return listValidSubDirs(basePath)
-    }
+    override fun getPatientIdList() = listValidSubDirs(basePath)
 
     override fun getPatient(patientId: String): DicomPatient<P, T, E, I>? {
         val metaInfo = getPatientMeta(patientId)
@@ -35,13 +33,9 @@ class DicomDataFileStore<P : Meta, T : Meta, E : Meta, I : ImageMeta>(
         return null
     }
 
-    override fun getPatientMeta(patientId: String): P? {
-        return loadMetaFile(dicomDataFactory.patientMetaClass.java, basePath, patientId)
-    }
+    override fun getPatientMeta(patientId: String) = loadMetaFile(dicomDataFactory.patientMetaClass.java, basePath, patientId)
 
-    override fun getStudyIdList(patientId: String): List<String> {
-        return listValidSubDirs(basePath, patientId)
-    }
+    override fun getStudyIdList(patientId: String) = listValidSubDirs(basePath, patientId)
 
     override fun getStudy(patientId: String, studyId: String): DicomStudy<T, E, I>? {
         val metaInfo = getStudyMeta(patientId, studyId)
@@ -52,13 +46,9 @@ class DicomDataFileStore<P : Meta, T : Meta, E : Meta, I : ImageMeta>(
         return null
     }
 
-    override fun getStudyMeta(patientId: String, studyId: String): T? {
-        return loadMetaFile(dicomDataFactory.studyMetaClass, basePath, patientId, studyId)
-    }
+    override fun getStudyMeta(patientId: String, studyId: String) = loadMetaFile(dicomDataFactory.studyMetaClass, basePath, patientId, studyId)
 
-    override fun getSeriesIdList(patientId: String, studyId: String): List<String> {
-        return listValidSubDirs(basePath, patientId, studyId)
-    }
+    override fun getSeriesIdList(patientId: String, studyId: String) = listValidSubDirs(basePath, patientId, studyId)
 
     override fun getSeries(patientId: String, studyId: String, seriesId: String): DicomSeries<E, I>? {
         val metaInfo = getSeriesMeta(patientId, studyId, seriesId)
@@ -71,17 +61,11 @@ class DicomDataFileStore<P : Meta, T : Meta, E : Meta, I : ImageMeta>(
         return null
     }
 
-    override fun getSeriesMeta(patientId: String, studyId: String, seriesId: String): E? {
-        return loadMetaFile(dicomDataFactory.seriesMetaClass, basePath, patientId, studyId, seriesId)
-    }
+    override fun getSeriesMeta(patientId: String, studyId: String, seriesId: String) = loadMetaFile(dicomDataFactory.seriesMetaClass, basePath, patientId, studyId, seriesId)
 
-    override fun getImageIdList(patientId: String, studyId: String, seriesId: String): List<String> {
-        return listValidSubDirs(basePath, patientId, studyId, seriesId)
-    }
+    override fun getImageIdList(patientId: String, studyId: String, seriesId: String) = listValidSubDirs(basePath, patientId, studyId, seriesId)
 
-    override fun getImageMeta(patientId: String, studyId: String, seriesId: String, imageNum: String): I? {
-        return loadMetaFile(dicomDataFactory.imageMetaClass, basePath, patientId, studyId, seriesId, imageNum)
-    }
+    override fun getImageMeta(patientId: String, studyId: String, seriesId: String, imageNum: String) = loadMetaFile(dicomDataFactory.imageMetaClass, basePath, patientId, studyId, seriesId, imageNum)
 
     override fun savePatient(patient: DicomPatient<P, T, E, I>) {
         savePatientMeta(patient.metaInfo)
@@ -227,13 +211,10 @@ class DicomDataFileStore<P : Meta, T : Meta, E : Meta, I : ImageMeta>(
         baseDir.deleteRecursively()
     }
 
-    private fun listValidSubDirs(vararg paths: String): List<String> {
-        return Paths.get(*paths).toFile().list(this::metaFileExists).toList()
-    }
+    private fun listValidSubDirs(vararg paths: String) = Paths.get(*paths).toFile().list(this::metaFileExists).toList()
 
-    private fun metaFileExists(dir: File, name: String): Boolean {
-        val subDir = Paths.get(dir.absolutePath, name).toFile()
-        return subDir.exists() && subDir.isDirectory && subDir.list({ _, nm -> metaFileName == nm }).isNotEmpty()
+    private fun metaFileExists(dir: File, name: String) = Paths.get(dir.absolutePath, name).toFile().let {
+        it.exists() && it.isDirectory && it.list({ _, nm -> metaFileName == nm }).isNotEmpty()
     }
 
     private fun <T> loadMetaFile(clazz: Class<T>, vararg dirNames: String): T? {

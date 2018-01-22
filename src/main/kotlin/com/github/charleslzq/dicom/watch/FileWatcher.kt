@@ -40,9 +40,7 @@ class FileWatcher(private val taskExecutor: AsyncTaskExecutor, private var autoS
         }
     }
 
-    override fun isRunning(): Boolean {
-        return !pause.get()
-    }
+    override fun isRunning() = !pause.get()
 
     override fun start() {
         if (pause.get()) {
@@ -52,9 +50,7 @@ class FileWatcher(private val taskExecutor: AsyncTaskExecutor, private var autoS
         }
     }
 
-    override fun isAutoStartup(): Boolean {
-        return autoStart
-    }
+    override fun isAutoStartup() = autoStart
 
     override fun stop(callback: Runnable?) {
         stop()
@@ -66,9 +62,7 @@ class FileWatcher(private val taskExecutor: AsyncTaskExecutor, private var autoS
         log.info("File Watcher stopped")
     }
 
-    override fun getPhase(): Int {
-        return 0
-    }
+    override fun getPhase() = 0
 
     private fun work() {
         while (!pause.get()) {
