@@ -3,7 +3,7 @@ package com.github.charleslzq.dicom.data
 import org.joda.time.LocalDateTime
 
 data class DicomPatientMetaInfo(
-        val id: String,
+        val id: String = "",
         val name: String = "",
         val address: String = "",
         val sex: String = "",

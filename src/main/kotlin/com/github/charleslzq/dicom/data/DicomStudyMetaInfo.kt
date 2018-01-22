@@ -5,7 +5,7 @@ import org.joda.time.LocalDateTime
 data class DicomStudyMetaInfo(
         val id: String = "",
         val accessionNumber: String = "",
-        val instanceUID: String,
+        val instanceUID: String = "",
         val modalities: String = "",
         val bodyPart: String = "",
         val patientAge: Int = -1,
